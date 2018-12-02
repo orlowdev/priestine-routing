@@ -1,0 +1,17 @@
+.nyc_output
+coverage
+docs
+.idea
+.vscode
+node_modules
+*.ts
+!*.d.ts
+.env
+.gitignore
+.gitlab-ci.yml
+*.sh
+*.md
+tsconfig.json
+tslint.json
+.prettierrc
+.tmp.*
