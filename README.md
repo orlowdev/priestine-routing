@@ -60,7 +60,7 @@ router
       buildHello,
       sayHello,
     ])
-    .get('/', [
+    .get(/^\/(\d+)\/?$/, [
       setContentTypeHeader('text/html'),
       buildHello,
       sayHello,
