@@ -93,6 +93,28 @@ export class HttpRouteMap {
     return this;
   }
 
+  public has(key: IHttpMatcher<string | RegExp>): boolean {
+    return !!Array.from(this._routes.keys()).find((x) => x.url === key.url && x.method === key.method);
+  }
+
+  /**
+   * Concat current RouteMap with the one provided as argument.
+   * **NOTE**: if two maps have the same key, the key of the argument RouteMap will have priority over the key
+   * of current RouteMap.
+   *
+   * @param {HttpRouteMap} o
+   * @returns {HttpRouteMap}
+   */
+  public concat(o: HttpRouteMap): HttpRouteMap {
+    for (const [k] of this._routes) {
+      if (o.has(k)) {
+        this._routes.delete(k);
+      }
+    }
+
+    return HttpRouteMap.of(new Map([...this._routes, ...o._routes]));
+  }
+
   /**
    * Sort internally stored Map to have routeMap matched by string before routeMap matched by RegExp.
    */

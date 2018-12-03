@@ -100,4 +100,25 @@ describe('HttpRouter', () => {
       );
     });
   });
+
+  describe('concat', () => {
+    it('should concat return a Router', () => {
+      expect(HttpRouter.empty().concat(HttpRouter.empty())).to.be.instanceOf(HttpRouter);
+    });
+
+    it('should merge route maps of both routers', () => {
+      expect(
+        HttpRouter.empty()
+          .get('/', [])
+          .concat(HttpRouter.empty().get('/1', []))
+          .routeMap.has(StringHttpMatcher.of({ url: '/', method: 'GET' }))
+      ).to.equal(true);
+      expect(
+        HttpRouter.empty()
+          .get('/', [])
+          .concat(HttpRouter.empty().get('/1', []))
+          .routeMap.has(StringHttpMatcher.of({ url: '/1', method: 'GET' }))
+      ).to.equal(true);
+    });
+  });
 });
