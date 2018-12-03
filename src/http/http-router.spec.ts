@@ -121,4 +121,60 @@ describe('HttpRouter', () => {
       ).to.equal(true);
     });
   });
+
+  describe('beforeEach', () => {
+    it('should assign beforeEach middleware to the RouteMap', () => {
+      const f1 = () => {};
+      const f2 = () => {};
+
+      expect(
+        HttpRouter.empty()
+          .get('/', [f1])
+          .beforeEach([f2])
+          .routeMap.find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f2, f1]);
+    });
+  });
+
+  describe('afterEach', () => {
+    it('should assign afterEach middleware to the RouteMap', () => {
+      const f1 = () => {};
+      const f2 = () => {};
+
+      expect(
+        HttpRouter.empty()
+          .get('/', [f1])
+          .afterEach([f2])
+          .routeMap.find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f1, f2]);
+    });
+
+    it('should correctly add afterEach when concatenating routers', () => {
+      const f1 = () => {};
+      const f2 = () => {};
+      const f3 = () => {};
+
+      expect(
+        HttpRouter.empty()
+          .get('/', [f1])
+          .afterEach([f2])
+          .concat(HttpRouter.empty().afterEach([f3]))
+          .routeMap.find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f1, f3, f2]);
+    });
+
+    it('should correctly add beforeEach when concatenating routers', () => {
+      const f1 = () => {};
+      const f2 = () => {};
+      const f3 = () => {};
+
+      expect(
+        HttpRouter.empty()
+          .get('/', [f1])
+          .beforeEach([f2])
+          .concat(HttpRouter.empty().beforeEach([f3]))
+          .routeMap.find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f2, f3, f1]);
+    });
+  });
 });

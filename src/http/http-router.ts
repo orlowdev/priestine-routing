@@ -82,6 +82,30 @@ export class HttpRouter {
   }
 
   /**
+   * Register middleware to be run before each Pipeline.
+   *
+   * @param {IHttpMiddlewareLike[]} middleware
+   * @returns {HttpRouter}
+   */
+  public beforeEach(middleware: IHttpMiddlewareLike[]): HttpRouter {
+    this._routeMap.beforeEach(middleware);
+
+    return this;
+  }
+
+  /**
+   * Register middleware to be run after each Pipeline.
+   *
+   * @param {IHttpMiddlewareLike[]} middleware
+   * @returns {HttpRouter}
+   */
+  public afterEach(middleware: IHttpMiddlewareLike[]): HttpRouter {
+    this._routeMap.afterEach(middleware);
+
+    return this;
+  }
+
+  /**
    * Concat two Routers to create a new Router that has RouteMaps of both Routers merged.
    *
    * @param {HttpRouter} o
