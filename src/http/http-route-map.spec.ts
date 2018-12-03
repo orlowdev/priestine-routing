@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { HttpRouteMap } from './http-route-map';
+import { StringHttpMatcher } from './matchers';
 
 describe('HttpRouteMap', () => {
   describe('sort', () => {
@@ -53,6 +54,34 @@ describe('HttpRouteMap', () => {
         key: { url: /^\/$/, method: 'GET' },
         value: [],
       });
+    });
+  });
+
+  describe('concat', () => {
+    it('should return an HttpRouteMap', () => {
+      expect(HttpRouteMap.empty().concat(HttpRouteMap.empty())).to.be.instanceOf(HttpRouteMap);
+    });
+
+    it('should merge internally stored maps', () => {
+      expect(
+        HttpRouteMap.empty()
+          .concat(HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), [() => {}]]])))
+          .find({ url: '/', method: 'GET' } as any).value.length
+      ).to.equal(1);
+    });
+
+    it('should override current route key with argument route key if they overlap', () => {
+      const f1 = (ctx) => ctx;
+      expect(
+        HttpRouteMap.of(
+          new Map([
+            [StringHttpMatcher.of({ url: '/', method: 'GET' }), [() => {}]],
+            [StringHttpMatcher.of({ url: '/1', method: 'GET' }), [() => {}]],
+          ])
+        )
+          .concat(HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), [f1]]])))
+          .find({ url: '/', method: 'GET' } as any).value[0]
+      ).to.equal(f1);
     });
   });
 });
