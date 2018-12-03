@@ -82,6 +82,16 @@ export class HttpRouter {
   }
 
   /**
+   * Concat two Routers to create a new Router that has RouteMaps of both Routers merged.
+   *
+   * @param {HttpRouter} o
+   * @returns {HttpRouter}
+   */
+  public concat(o: HttpRouter): HttpRouter {
+    return HttpRouter.from(this.routeMap.concat(o.routeMap));
+  }
+
+  /**
    * Register a new route in the Router.routeMap.
    *
    * @param {string | RegExp} url
