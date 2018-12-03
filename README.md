@@ -20,6 +20,7 @@ yarn add @priestine/routing
 
 ```javascript
 import { withHttpRouter, HttpRouter } from '@priestine/routing';
+import { createServer } from 'http';
 
 /**
  * Create an empty router
