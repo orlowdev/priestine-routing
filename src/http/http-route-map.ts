@@ -40,6 +40,22 @@ export class HttpRouteMap {
   protected _routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>;
 
   /**
+   * Array of Middleware to be unshifted into each pipeline.
+   *
+   * @type {IHttpMiddlewareLike[]}
+   * @private
+   */
+  protected _beforeEach: IHttpMiddlewareLike[] = [];
+
+  /**
+   * Array of Middleware to be pushed into each pipeline.
+   *
+   * @type {IHttpMiddlewareLike[]}
+   * @private
+   */
+  protected _afterEach: IHttpMiddlewareLike[] = [];
+
+  /**
    * Map is sorted flag.
    *
    * @type {boolean}
@@ -56,8 +72,36 @@ export class HttpRouteMap {
     return this._sorted;
   }
 
+  /**
+   * @constructor
+   * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
+   */
   public constructor(routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map()) {
     this._routes = routes;
+  }
+
+  /**
+   * Register middleware to be run before each Pipeline.
+   *
+   * @param {IHttpMiddlewareLike[]} middleware
+   * @returns {HttpRouteMap}
+   */
+  public beforeEach(middleware: IHttpMiddlewareLike[]): HttpRouteMap {
+    this._beforeEach = this._beforeEach.concat(middleware);
+
+    return this;
+  }
+
+  /**
+   * Register middleware to be run after each Pipeline.
+   *
+   * @param {IHttpMiddlewareLike[]} middleware
+   * @returns {HttpRouteMap}
+   */
+  public afterEach(middleware: IHttpMiddlewareLike[]): HttpRouteMap {
+    this._afterEach = this._afterEach.concat(middleware);
+
+    return this;
   }
 
   /**
@@ -69,9 +113,9 @@ export class HttpRouteMap {
   public find(message: IncomingMessage): IPair<IHttpRouteData, IHttpMiddlewareLike[]> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
 
-    return route
-      ? { key: { url: route.url, method: route.method }, value: this._routes.get(route) }
-      : { key: undefined, value: [] };
+    const value = this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach);
+
+    return route ? { key: { url: route.url, method: route.method }, value } : { key: undefined, value: [] };
   }
 
   /**
@@ -112,7 +156,9 @@ export class HttpRouteMap {
       }
     }
 
-    return HttpRouteMap.of(new Map([...this._routes, ...o._routes]));
+    return HttpRouteMap.of(new Map([...this._routes, ...o._routes]))
+      .beforeEach(this._beforeEach.concat(o._beforeEach))
+      .afterEach(o._afterEach.concat(this._afterEach));
   }
 
   /**

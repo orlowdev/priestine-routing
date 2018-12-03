@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { IMiddlewareLike } from '../common/interfaces';
 import { HttpRouteMap } from './http-route-map';
 import { StringHttpMatcher } from './matchers';
 
@@ -82,6 +83,52 @@ describe('HttpRouteMap', () => {
           .concat(HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), [f1]]])))
           .find({ url: '/', method: 'GET' } as any).value[0]
       ).to.equal(f1);
+    });
+  });
+
+  describe('beforeEach', () => {
+    const f1 = () => {};
+    const f2 = () => {};
+
+    it('should register routes to be run before each pipeline', () => {
+      expect(
+        HttpRouteMap.empty()
+          .beforeEach([f1])
+          .add('/', ['GET'], [f2])
+          .find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f1, f2]);
+    });
+
+    it('should prepend beforeEach middleware even if they are defined after the pipeline', () => {
+      expect(
+        HttpRouteMap.empty()
+          .add('/', ['GET'], [f2])
+          .beforeEach([f1])
+          .find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f1, f2]);
+    });
+  });
+
+  describe('afterEach', () => {
+    const f1 = () => {};
+    const f2 = () => {};
+
+    it('should register routes to be run after each pipeline', () => {
+      expect(
+        HttpRouteMap.empty()
+          .add('/', ['GET'], [f2])
+          .afterEach([f1])
+          .find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f2, f1]);
+    });
+
+    it('should append afterEach middleware even if they are defined before the pipeline', () => {
+      expect(
+        HttpRouteMap.empty()
+          .afterEach([f1])
+          .add('/', ['GET'], [f2])
+          .find({ url: '/', method: 'GET' } as any).value
+      ).to.deep.equal([f2, f1]);
     });
   });
 });
