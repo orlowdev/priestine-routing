@@ -129,7 +129,6 @@ describe('HttpRouter', () => {
     });
 
     it('should preserve prefixes', () => {
-      console.log(HttpRouter.withPrefix('/api').concat(HttpRouter.withPrefix('/v1').get('/1', [])).routeMap);
       expect(
         HttpRouter.withPrefix('/api')
           .concat(HttpRouter.withPrefix('/v1').get('/1', []))
