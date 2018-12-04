@@ -56,7 +56,10 @@ export class HttpRouteMap {
    */
   protected _afterEach: IHttpMiddlewareLike[] = [];
 
-  protected _prefix: string;
+  /**
+   * Internally stored prefix to be prepended to each created route.
+   */
+  protected _prefix: string | RegExp;
 
   /**
    * Map is sorted flag.
@@ -78,11 +81,11 @@ export class HttpRouteMap {
   /**
    * @constructor
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
-   * @param prefix
+   * @param {string | RegExp} prefix
    */
   public constructor(
     routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map(),
-    prefix: string = ''
+    prefix: string | RegExp = ''
   ) {
     this._routes = routes;
     this._prefix = prefix;
@@ -165,7 +168,11 @@ export class HttpRouteMap {
       }
     }
 
-    return HttpRouteMap.of(new Map([...this._routes, ...o._routes]))
+    Array.from(o._routes.keys()).forEach((key) => {
+      (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
+    });
+
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), mergePrefixAndUrl(this._prefix, o._prefix))
       .beforeEach(this._beforeEach.concat(o._beforeEach))
       .afterEach(o._afterEach.concat(this._afterEach));
   }
