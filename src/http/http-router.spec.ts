@@ -4,6 +4,13 @@ import { HttpRouter } from './http-router';
 import { StringHttpMatcher } from './matchers';
 
 describe('HttpRouter', () => {
+  describe('HttpRouter.withPrefix', () => {
+    it('should apply prefix to registered routes', () => {
+      const rt = HttpRouter.withPrefix('/api').get('/v1', []);
+      expect(rt.routeMap.has(StringHttpMatcher.of({ url: '/api/v1', method: 'GET' }))).to.equal(true);
+    });
+  });
+
   describe('routeMap', () => {
     it('should return internally stored HttpRouteMap', () => {
       expect(HttpRouter.empty().routeMap).to.be.instanceOf(HttpRouteMap);
@@ -118,6 +125,15 @@ describe('HttpRouter', () => {
           .get('/', [])
           .concat(HttpRouter.empty().get('/1', []))
           .routeMap.has(StringHttpMatcher.of({ url: '/1', method: 'GET' }))
+      ).to.equal(true);
+    });
+
+    it('should preserve prefixes', () => {
+      console.log(HttpRouter.withPrefix('/api').concat(HttpRouter.withPrefix('/v1').get('/1', [])).routeMap);
+      expect(
+        HttpRouter.withPrefix('/api')
+          .concat(HttpRouter.withPrefix('/v1').get('/1', []))
+          .routeMap.has(StringHttpMatcher.of({ url: '/api/v1/1', method: 'GET' }))
       ).to.equal(true);
     });
   });

@@ -2,6 +2,7 @@ import { IncomingMessage } from 'http';
 import { isRegExpMatcher } from '../common/guards';
 import { IPair } from '../common/interfaces';
 import { HttpMethods } from './enums';
+import { mergePrefixAndUrl } from './helpers';
 import { IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
@@ -56,6 +57,11 @@ export class HttpRouteMap {
   protected _afterEach: IHttpMiddlewareLike[] = [];
 
   /**
+   * Internally stored prefix to be prepended to each created route.
+   */
+  protected _prefix: string | RegExp;
+
+  /**
    * Map is sorted flag.
    *
    * @type {boolean}
@@ -75,9 +81,14 @@ export class HttpRouteMap {
   /**
    * @constructor
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
+   * @param {string | RegExp} prefix
    */
-  public constructor(routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map()) {
+  public constructor(
+    routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map(),
+    prefix: string | RegExp = ''
+  ) {
     this._routes = routes;
+    this._prefix = prefix;
   }
 
   /**
@@ -127,6 +138,7 @@ export class HttpRouteMap {
    * @returns {this}
    */
   public add(url: string | RegExp, methods: Array<keyof typeof HttpMethods>, middleware: IHttpMiddlewareLike[]) {
+    url = mergePrefixAndUrl(this._prefix, url);
     methods.forEach((method) => {
       const key =
         typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
@@ -156,7 +168,11 @@ export class HttpRouteMap {
       }
     }
 
-    return HttpRouteMap.of(new Map([...this._routes, ...o._routes]))
+    Array.from(o._routes.keys()).forEach((key) => {
+      (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
+    });
+
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), mergePrefixAndUrl(this._prefix, o._prefix))
       .beforeEach(this._beforeEach.concat(o._beforeEach))
       .afterEach(o._afterEach.concat(this._afterEach));
   }

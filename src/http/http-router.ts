@@ -11,10 +11,21 @@ import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
 export class HttpRouter {
   /**
    * Create an empty HttpRouter.
+   *
    * @returns {HttpRouter}
    */
   public static empty() {
     return new HttpRouter();
+  }
+
+  /**
+   * Create an empty HttpRouter with prefix assigned to be added to each route url.
+   *
+   * @param {string | RegExp} prefix
+   * @returns {HttpRouter}
+   */
+  public static withPrefix(prefix: string | RegExp) {
+    return HttpRouter.from(new HttpRouteMap(new Map(), prefix));
   }
 
   /**
