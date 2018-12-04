@@ -2,6 +2,7 @@ import { IncomingMessage } from 'http';
 import { isRegExpMatcher } from '../common/guards';
 import { IPair } from '../common/interfaces';
 import { HttpMethods } from './enums';
+import { mergePrefixAndUrl } from './helpers';
 import { IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
@@ -55,6 +56,8 @@ export class HttpRouteMap {
    */
   protected _afterEach: IHttpMiddlewareLike[] = [];
 
+  protected _prefix: string;
+
   /**
    * Map is sorted flag.
    *
@@ -75,9 +78,14 @@ export class HttpRouteMap {
   /**
    * @constructor
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
+   * @param prefix
    */
-  public constructor(routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map()) {
+  public constructor(
+    routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map(),
+    prefix: string = ''
+  ) {
     this._routes = routes;
+    this._prefix = prefix;
   }
 
   /**
@@ -127,6 +135,7 @@ export class HttpRouteMap {
    * @returns {this}
    */
   public add(url: string | RegExp, methods: Array<keyof typeof HttpMethods>, middleware: IHttpMiddlewareLike[]) {
+    url = mergePrefixAndUrl(this._prefix, url);
     methods.forEach((method) => {
       const key =
         typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
