@@ -299,6 +299,29 @@ HttpRouter.empty()
 In the example above `IsAuthorized` blocks the middleware until the `ctx` is resolved. Thus, the Promise is rejected,
 the pipeline will be exited and no further computation will be executed, being replaced with `HttpRouter.onError`.
 
+#### IGenericMiddlewareLike
+
+`@priestine/routing` is written in TypeScript and provides generic context interfaces for providing typings of
+`ctx.intermediate`:
+
+```typescript
+import { IGenericHttpContext } from '@priestine/routing';
+
+interface IUserAware {
+  user: {
+    _id: string;
+    name: string;
+  };
+}
+
+export const GetUser = (ctx: IGenericHttpContext<IUserAware>) => {
+  ctx.intermediate.user = {
+    _id: '123123123123',
+    name: 'Test User',
+  };
+};
+```
+
 ### Assigning router to listen for connections
 
 The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a helper
