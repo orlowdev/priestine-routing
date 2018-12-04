@@ -235,6 +235,70 @@ router.get('/', [
 ])
 ```
 
+#### Parallel vs waterfall
+
+Asynchronous middleware in the pipeline can be executed in either in parallel or sequentially. Each middleware can
+dictate which type of execution must be applied to it:
+
+- parallel execution does not block the pipeline and allows next middleware start processing even if the promise of 
+current middleware has not been resolved. It this case, the Promise containing the result of current middleware
+computation can be directly assigned to the `ctx.intermediate` key and *awaited* later where necessary. This approach
+allows doing extra checks simultaneously and exit the pipeline if something is not right. Example:
+
+```javascript
+const GetCurrentPost = (ctx) => {
+  ctx.intermediate.post = db.collection('posts').findOne({ id: ctx.intermediate.params.id });
+};
+
+const GetPostComments = async (ctx) => {
+  ctx.intermediate.body = (await ctx.intermediate.post).comments;
+};
+
+HttpRouter.empty()
+  .get(/^\/posts\/(?<id>(\w+))\/comments/, [
+    GetCurrentPost,
+    IsAuthenticated,
+    GetPostComments,
+  ])
+;
+```
+
+In the example above `GetCurrentPost` doesn't block the next piece of middleware that can trigger exiting the pipeline
+if user is not authenticated thus not allowed to see posts in this imaginary scenario. This allows writing middleware
+in arbitrary order in some cases.
+
+- waterfall execution blocks the pipeline until current middleware is done. This is convenient in cases where further
+execution of the pipeline heavily relies on the result of computation. To inform the pipeline that it needs to wait for
+current middleware to *await*, you need to return a Promise inside the middleware, that resolves with amended
+`ctx`:
+
+```javascript
+const IsAuthorized = (ctx) => new Promise((resolve, reject) => {
+  db.collection('users').findOne({ _id: ctx.intermediate.userId })
+    .then((u) => {
+      if (u.roles.includes('admin')) {
+        ctx.intermediate.userAuhorized = true;
+        resolve(ctx);
+        return;
+      }
+      
+      reject(new UnauthorizedError());
+    })
+  ;
+});
+
+HttpRouter.empty()
+  .get(/^\/posts\/(?<id>(\w+))\/comments/, [
+    IsAuthorized,
+    GetCurrentPost,
+    GetPostComments,
+  ])
+;
+```
+
+In the example above `IsAuthorized` blocks the middleware until the `ctx` is resolved. Thus, the Promise is rejected,
+the pipeline will be exited and no further computation will be executed, being replaced with `HttpRouter.onError`.
+
 ### Assigning router to listen for connections
 
 The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a helper
