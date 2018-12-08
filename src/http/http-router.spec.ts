@@ -135,6 +135,15 @@ describe('HttpRouter', () => {
           .routeMap.has(StringHttpMatcher.of({ url: '/api/v1/1', method: 'GET' }))
       ).to.equal(true);
     });
+
+    it('should preserve prefixes only on current concatenation scope', () => {
+      expect(
+        HttpRouter.withPrefix('/api')
+          .concat(HttpRouter.withPrefix('/v1').get('/1', []))
+          .concat(HttpRouter.withPrefix('/v2').get('/1', []))
+          .routeMap.has(StringHttpMatcher.of({ url: '/api/v2/1', method: 'GET' }))
+      ).to.equal(true);
+    });
   });
 
   describe('beforeEach', () => {

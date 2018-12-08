@@ -172,7 +172,7 @@ export class HttpRouteMap {
       (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
     });
 
-    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), mergePrefixAndUrl(this._prefix, o._prefix))
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), this._prefix)
       .beforeEach(this._beforeEach.concat(o._beforeEach))
       .afterEach(o._afterEach.concat(this._afterEach));
   }
