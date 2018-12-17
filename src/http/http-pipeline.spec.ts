@@ -51,7 +51,7 @@ describe('HttpPipeline', () => {
     });
   });
 
-  describe('$process', () => {
+  describe('$process', async () => {
     class CBM implements IHttpMiddleware {
       public $process(ctx) {
         ctx.intermediate.id += 5;
@@ -60,14 +60,18 @@ describe('HttpPipeline', () => {
 
     const fn1 = (ctx) => (ctx.intermediate.id = 1);
     const fn2 = (ctx) => (ctx.intermediate.id += 2);
-    const fn3 = (ctx) => (ctx.intermediate.id += 3);
+    const fn3 = (ctx) => {
+      ctx.intermediate.id += ctx.intermediate.id ? 3 : '';
+      return ctx;
+    };
     const fnBroken = (ctx) => {
       throw new Error('test');
     };
 
+    const ctx = { request: {}, response: {}, intermediate: {} } as any;
+    await HttpPipeline.of([fn3]).$process(ctx);
     const successfulPipeline = HttpPipeline.of([fn1, fn2, fn3, new CBM()]);
     const brokenPipeline = HttpPipeline.of([fn1, fnBroken, fn3, new CBM()]);
-    HttpRouter.onError([(ctx) => ctx]);
 
     it('should return result if the middleware execution did not cause any errors', async () => {
       const ctx = { intermediate: {} } as any;
