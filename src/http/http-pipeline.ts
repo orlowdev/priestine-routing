@@ -1,4 +1,5 @@
 import { isMiddlewareObject } from '../common/guards';
+import { IPipeline } from '../common/interfaces/pipeline.interface';
 import { HttpRouter } from './http-router';
 import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
 
@@ -8,7 +9,7 @@ import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
  * @class HttpPipeline
  * @implements IterableIterator<IHttpMiddlewareLike>
  */
-export class HttpPipeline implements IterableIterator<IHttpMiddlewareLike> {
+export class HttpPipeline implements IPipeline<IHttpContext> {
   /**
    * Pointer interface for creating an HttpPipeline from given array of middleware.
    *
