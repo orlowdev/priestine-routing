@@ -1,5 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { HttpPipeline } from '../http-pipeline';
 import { HttpRouter } from '../http-router';
 import { IHttpContext } from '../interfaces';
 
