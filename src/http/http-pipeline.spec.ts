@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { HttpPipeline } from './http-pipeline';
 import { HttpRouter } from './http-router';
-import { HttpMiddlewareInterface } from './interfaces';
+import { IHttpMiddleware } from './interfaces';
 
 describe('HttpPipeline', () => {
   const f1 = (ctx) => ctx;
@@ -52,7 +52,7 @@ describe('HttpPipeline', () => {
   });
 
   describe('$process', () => {
-    class CBM implements HttpMiddlewareInterface {
+    class CBM implements IHttpMiddleware {
       public $process(ctx) {
         ctx.intermediate.id += 5;
       }
