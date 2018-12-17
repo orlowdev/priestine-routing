@@ -7,4 +7,4 @@ import { RegExpHttpMatcher } from '../../http/matchers';
  * @returns {x is RegExpHttpMatcher}
  */
 export const isRegExpMatcher = (x: any): x is RegExpHttpMatcher =>
-  'url' in x && typeof x.url !== 'string' && 'source' in x.url;
+  typeof x === 'object' && 'url' in x && typeof x.url !== 'string' && 'source' in x.url;
