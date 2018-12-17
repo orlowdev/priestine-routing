@@ -18,8 +18,17 @@ export interface IPipeline<TContext extends IMiddlewareContext> extends Iterable
 
   /**
    * Sequentially process middleware stored in current Pipeline.
+   *
    * @param {TContext} ctx
    * @returns {Promise<void>}
    */
   $process(ctx: TContext): Promise<void>;
+
+  /**
+   * Concat this pipeline with argument pipeline.
+   *
+   * @param {IPipeline<TContext>} x
+   * @returns {IPipeline<TContext>}
+   */
+  concat(x: IPipeline<TContext>): IPipeline<TContext>;
 }

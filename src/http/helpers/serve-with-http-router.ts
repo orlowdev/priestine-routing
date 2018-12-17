@@ -19,8 +19,6 @@ export const withHttpRouter = (router: HttpRouter) => (
 
   const route = router.routeMap.find(request);
 
-  const pipeline = HttpPipeline.of(route.value);
-
   const ctx: IHttpContext = {
     request,
     response,
@@ -29,11 +27,11 @@ export const withHttpRouter = (router: HttpRouter) => (
     },
   };
 
-  if (pipeline.isEmpty) {
+  if (route.value.isEmpty) {
     ctx.intermediate.error = new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`);
     HttpRouter.handleError(ctx);
     return;
   }
 
-  pipeline.$process(ctx);
+  route.value.$process(ctx);
 };

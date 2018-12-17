@@ -72,6 +72,16 @@ export class HttpPipeline implements IPipeline<IHttpContext> {
   }
 
   /**
+   * Concat this HttpMiddleware with argument HttpMiddleware.
+   *
+   * @param {HttpPipeline} x
+   * @returns {HttpPipeline}
+   */
+  public concat(x: HttpPipeline): HttpPipeline {
+    return HttpPipeline.of(this._middleware.concat(x._middleware));
+  }
+
+  /**
    * Sequentially process middleware stored in current Pipeline.
    *
    * If the middleware returns a Promise, it will be resolved before moving on to the next middleware.

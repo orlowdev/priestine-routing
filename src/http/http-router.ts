@@ -1,3 +1,4 @@
+import { IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { HttpPipeline } from './http-pipeline';
 import { HttpRouteMap } from './http-route-map';
@@ -95,10 +96,10 @@ export class HttpRouter {
   /**
    * Register middleware to be run before each Pipeline.
    *
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public beforeEach(middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public beforeEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     this._routeMap.beforeEach(middleware);
 
     return this;
@@ -107,10 +108,10 @@ export class HttpRouter {
   /**
    * Register middleware to be run after each Pipeline.
    *
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public afterEach(middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public afterEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     this._routeMap.afterEach(middleware);
 
     return this;
@@ -131,10 +132,14 @@ export class HttpRouter {
    *
    * @param {string | RegExp} url
    * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {this}
    */
-  public register(url: string | RegExp, methods: Array<keyof typeof HttpMethods>, middleware: IHttpMiddlewareLike[]) {
+  public register(
+    url: string | RegExp,
+    methods: Array<keyof typeof HttpMethods>,
+    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+  ) {
     this._routeMap.add(url, methods, middleware);
 
     return this;
@@ -145,10 +150,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
-  public get(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public get(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.GET], middleware);
   }
 
@@ -157,10 +162,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public post(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public post(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.POST], middleware);
   }
 
@@ -169,10 +174,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public put(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public put(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.PUT], middleware);
   }
 
@@ -181,10 +186,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public patch(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public patch(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.PATCH], middleware);
   }
 
@@ -193,10 +198,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public delete(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public delete(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.DELETE], middleware);
   }
 
@@ -205,10 +210,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public options(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public options(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.OPTIONS], middleware);
   }
 
@@ -217,10 +222,10 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {string | RegExp} url
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public head(url: string | RegExp, middleware: IHttpMiddlewareLike[]): HttpRouter {
+  public head(url: string | RegExp, middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
   }
 }

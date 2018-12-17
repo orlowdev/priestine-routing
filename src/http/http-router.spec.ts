@@ -152,10 +152,10 @@ describe('HttpRouter', () => {
       const f2 = () => {};
 
       expect(
-        HttpRouter.empty()
+        (HttpRouter.empty()
           .get('/', [f1])
           .beforeEach([f2])
-          .routeMap.find({ url: '/', method: 'GET' } as any).value
+          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
       ).to.deep.equal([f2, f1]);
     });
   });
@@ -166,10 +166,10 @@ describe('HttpRouter', () => {
       const f2 = () => {};
 
       expect(
-        HttpRouter.empty()
+        (HttpRouter.empty()
           .get('/', [f1])
           .afterEach([f2])
-          .routeMap.find({ url: '/', method: 'GET' } as any).value
+          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
       ).to.deep.equal([f1, f2]);
     });
 
@@ -179,11 +179,11 @@ describe('HttpRouter', () => {
       const f3 = () => {};
 
       expect(
-        HttpRouter.empty()
+        (HttpRouter.empty()
           .get('/', [f1])
           .afterEach([f2])
           .concat(HttpRouter.empty().afterEach([f3]))
-          .routeMap.find({ url: '/', method: 'GET' } as any).value
+          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
       ).to.deep.equal([f1, f3, f2]);
     });
 
@@ -193,11 +193,11 @@ describe('HttpRouter', () => {
       const f3 = () => {};
 
       expect(
-        HttpRouter.empty()
+        (HttpRouter.empty()
           .get('/', [f1])
           .beforeEach([f2])
           .concat(HttpRouter.empty().beforeEach([f3]))
-          .routeMap.find({ url: '/', method: 'GET' } as any).value
+          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
       ).to.deep.equal([f2, f3, f1]);
     });
   });
