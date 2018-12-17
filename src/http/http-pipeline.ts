@@ -91,18 +91,19 @@ export class HttpPipeline implements IPipeline<IHttpContext> {
    * @returns {Promise<void>}
    */
   public async $process(ctx: IHttpContext): Promise<void> {
+    let internalCtx = { ...ctx };
     while (!this.done) {
       try {
         const next = this.next().value;
         const process = isMiddlewareObject(next) ? next.$process : next;
-        const result = await process(ctx);
+        const result = await process(internalCtx);
 
         if (result && isHttpMiddlewareContext(result)) {
-          ctx = { ...result };
+          internalCtx = { ...result };
         }
       } catch (e) {
         ctx.intermediate.error = e;
-        await HttpRouter.handleError(ctx);
+        HttpRouter.eventEmitter.emit('pipelineError', ctx);
         return;
       }
     }

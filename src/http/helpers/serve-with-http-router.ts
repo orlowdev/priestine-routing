@@ -31,7 +31,7 @@ export const withHttpRouter = (router: HttpRouter) => (
     ctx.intermediate.error = HttpError.from(
       new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`)
     ).withStatusCode(404);
-    HttpRouter.handleError(ctx);
+    HttpRouter.eventEmitter.emit('pipelineError', ctx);
     return;
   }
 

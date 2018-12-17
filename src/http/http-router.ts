@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { HttpPipeline } from './http-pipeline';
@@ -42,41 +43,11 @@ export class HttpRouter {
   }
 
   /**
-   * Handle caught error by creating an emergency Pipeline from the HttpRouter.errorHandlers and process it using
-   * current context.
+   * Static router event bus.
    *
-   * @param {IHttpContext} ctx
+   * @type {module:events.internal.EventEmitter}
    */
-  public static handleError(ctx: IHttpContext): void {
-    HttpPipeline.of(HttpRouter.errorHandlers).$process(ctx);
-  }
-
-  /**
-   * Array of error handler middleware. This middleware is used by Router.handleError for processing unhandled errors.
-   *
-   * @type {((ctx: IHttpContext) => void)[]}
-   */
-  protected static _errorHandlers: IHttpMiddlewareLike[] = [];
-
-  /**
-   * Register middleware to handle errors that occur during pipeline execution.
-   *
-   * **NOTE**: this is going to get deprecated soon.
-   *
-   * @param {IHttpMiddlewareLike[]} middleware
-   */
-  public static onError(middleware: IHttpMiddlewareLike[]): void {
-    this._errorHandlers = middleware;
-  }
-
-  /**
-   * Getter for _errorHandlers.
-   *
-   * @returns {IHttpMiddlewareLike[]}
-   */
-  public static get errorHandlers(): IHttpMiddlewareLike[] {
-    return this._errorHandlers;
-  }
+  public static eventEmitter = new EventEmitter();
 
   /**
    * Internally stored HttpRouteMap.
@@ -250,3 +221,10 @@ export class HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
   }
 }
+
+//const rt = HttpRouter.empty().get('/', [() => {
+//  throw new Error('he');
+//}]);
+
+//HttpRouter.eventEmitter.on('pipelineError', () => console.log('here'));
+//rt.routeMap.find({ url: '/', method: 'GET'} as any).value.$process({ intermediate: {}} as any);
