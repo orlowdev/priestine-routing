@@ -10,7 +10,7 @@ describe('HttpRouteMap', () => {
         .add(/^\/$/, ['GET'], [])
         .add('/a', ['GET'], [])
         .add(/^\/123$/, ['GET'], [])
-        .add('/456', ['GET'], HttpPipeline.empty());
+        .add(StringHttpMatcher.of({ url: '/456', method: 'GET' }), ['GET'], HttpPipeline.empty());
 
       expect((Array.from((map as any)._routes.keys())[0] as any).url).to.be.instanceOf(RegExp);
       map.sort();
