@@ -9,8 +9,17 @@ export interface IMatcher<TUrl, TRequest> {
 
   /**
    * Evaluate incoming message and deduce if it matches current route.
+   *
    * @param {TRequest} message
    * @returns {boolean}
    */
   matches(message: TRequest): boolean;
+
+  /**
+   * Prepend given prefix to matcher URL.
+   *
+   * @param prefix
+   * @returns {IMatcher<TUrl, TRequest>}
+   */
+  withPrefix(prefix: string | RegExp): IMatcher<TUrl, TRequest>;
 }

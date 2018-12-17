@@ -1,5 +1,5 @@
 import { IncomingMessage } from 'http';
-import { isPipeline, isRegExpMatcher } from '../common/guards';
+import { isHttpMatcher, isMatcher, isPipeline, isRegExpMatcher } from '../common/guards';
 import { IPair, IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { mergePrefixAndUrl } from './helpers';
@@ -129,7 +129,9 @@ export class HttpRouteMap {
       ? this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach)
       : HttpPipeline.empty();
 
-    return route ? { key: { url: route.url, method: route.method }, value } : { key: undefined, value };
+    const key = route ? { url: route.url, method: route.method } : undefined;
+
+    return { key, value };
   }
 
   /**
@@ -141,16 +143,22 @@ export class HttpRouteMap {
    * @returns {this}
    */
   public add(
-    url: string | RegExp,
+    url: string | RegExp | IHttpMatcher<any>,
     methods: Array<keyof typeof HttpMethods>,
     middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
   ) {
-    url = mergePrefixAndUrl(this._prefix, url);
     methods.forEach((method) => {
-      const key =
-        typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
+      const key = (isHttpMatcher(url)
+        ? url
+        : typeof url === 'string'
+          ? StringHttpMatcher.of({ url, method })
+          : RegExpHttpMatcher.of({
+              url: url as RegExp,
+              method,
+            })
+      ).withPrefix(this._prefix);
 
-      this._routes.set(key, isPipeline(middleware) ? middleware : HttpPipeline.of(middleware));
+      this._routes.set(key as IHttpMatcher<any>, isPipeline(middleware) ? middleware : HttpPipeline.of(middleware));
     });
 
     return this;
