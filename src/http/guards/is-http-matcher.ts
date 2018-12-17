@@ -1,5 +1,5 @@
-import { IHttpMatcher } from '../../http/interfaces';
-import { isMatcher } from './is-matcher';
+import { IHttpMatcher } from '../interfaces';
+import { isMatcher } from '../../common/guards';
 
 /**
  * Check if argument is an HTTP matcher.

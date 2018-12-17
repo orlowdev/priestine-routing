@@ -1,7 +1,8 @@
 import { IncomingMessage } from 'http';
-import { isHttpMatcher, isMatcher, isPipeline, isRegExpMatcher } from '../common/guards';
+import { isPipeline, isRegExpMatcher } from '../common/guards';
 import { IPair, IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
+import { isHttpMatcher } from './guards';
 import { mergePrefixAndUrl } from './helpers';
 import { HttpPipeline } from './http-pipeline';
 import { IHttpContext, IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
