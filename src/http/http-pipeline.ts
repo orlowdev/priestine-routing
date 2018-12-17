@@ -1,4 +1,5 @@
 import { isMiddlewareObject } from '../common/guards';
+import { IPipeline } from '../common/interfaces';
 import { HttpRouter } from './http-router';
 import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
 
@@ -8,7 +9,7 @@ import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
  * @class HttpPipeline
  * @implements IterableIterator<IHttpMiddlewareLike>
  */
-export class HttpPipeline implements IterableIterator<IHttpMiddlewareLike> {
+export class HttpPipeline implements IPipeline<IHttpContext> {
   /**
    * Pointer interface for creating an HttpPipeline from given array of middleware.
    *
@@ -68,6 +69,16 @@ export class HttpPipeline implements IterableIterator<IHttpMiddlewareLike> {
    */
   public get done(): boolean {
     return this._done;
+  }
+
+  /**
+   * Concat this HttpMiddleware with argument HttpMiddleware.
+   *
+   * @param {HttpPipeline} x
+   * @returns {HttpPipeline}
+   */
+  public concat(x: HttpPipeline): HttpPipeline {
+    return HttpPipeline.of(this._middleware.concat(x._middleware));
   }
 
   /**

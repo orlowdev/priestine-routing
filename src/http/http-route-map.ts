@@ -1,9 +1,10 @@
 import { IncomingMessage } from 'http';
-import { isRegExpMatcher } from '../common/guards';
-import { IPair } from '../common/interfaces';
+import { isPipeline, isRegExpMatcher } from '../common/guards';
+import { IPair, IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { mergePrefixAndUrl } from './helpers';
-import { IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
+import { HttpPipeline } from './http-pipeline';
+import { IHttpContext, IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
 /**
@@ -28,7 +29,7 @@ export class HttpRouteMap {
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
    * @returns {HttpRouteMap}
    */
-  public static of(routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>) {
+  public static of(routes: Map<IHttpMatcher<string | RegExp>, HttpPipeline>) {
     return new HttpRouteMap(routes);
   }
 
@@ -38,7 +39,7 @@ export class HttpRouteMap {
    * @type {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>}
    * @private
    */
-  protected _routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>;
+  protected _routes: Map<IHttpMatcher<string | RegExp>, IPipeline<IHttpContext>>;
 
   /**
    * Array of Middleware to be unshifted into each pipeline.
@@ -46,7 +47,7 @@ export class HttpRouteMap {
    * @type {IHttpMiddlewareLike[]}
    * @private
    */
-  protected _beforeEach: IHttpMiddlewareLike[] = [];
+  protected _beforeEach: IPipeline<IHttpContext> = HttpPipeline.empty();
 
   /**
    * Array of Middleware to be pushed into each pipeline.
@@ -54,7 +55,7 @@ export class HttpRouteMap {
    * @type {IHttpMiddlewareLike[]}
    * @private
    */
-  protected _afterEach: IHttpMiddlewareLike[] = [];
+  protected _afterEach: IPipeline<IHttpContext> = HttpPipeline.empty();
 
   /**
    * Internally stored prefix to be prepended to each created route.
@@ -84,7 +85,7 @@ export class HttpRouteMap {
    * @param {string | RegExp} prefix
    */
   public constructor(
-    routes: Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]> = new Map(),
+    routes: Map<IHttpMatcher<string | RegExp>, HttpPipeline> = new Map(),
     prefix: string | RegExp = ''
   ) {
     this._routes = routes;
@@ -94,11 +95,11 @@ export class HttpRouteMap {
   /**
    * Register middleware to be run before each Pipeline.
    *
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
-  public beforeEach(middleware: IHttpMiddlewareLike[]): HttpRouteMap {
-    this._beforeEach = this._beforeEach.concat(middleware);
+  public beforeEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouteMap {
+    this._beforeEach = this._beforeEach.concat(isPipeline(middleware) ? middleware : HttpPipeline.of(middleware));
 
     return this;
   }
@@ -106,11 +107,11 @@ export class HttpRouteMap {
   /**
    * Register middleware to be run after each Pipeline.
    *
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
-  public afterEach(middleware: IHttpMiddlewareLike[]): HttpRouteMap {
-    this._afterEach = this._afterEach.concat(middleware);
+  public afterEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouteMap {
+    this._afterEach = this._afterEach.concat(isPipeline(middleware) ? middleware : HttpPipeline.of(middleware));
 
     return this;
   }
@@ -119,14 +120,16 @@ export class HttpRouteMap {
    * Find matching route for current IncomingMessage and return an IPair<IHttpRouteData, IHttpMiddlewareLike[]>.
    *
    * @param {IncomingMessage} message
-   * @returns {IPair<IHttpRouteData, IHttpMiddlewareLike[]>}
+   * @returns {IPair<IHttpRouteData, HttpPipeline>}
    */
-  public find(message: IncomingMessage): IPair<IHttpRouteData, IHttpMiddlewareLike[]> {
+  public find(message: IncomingMessage): IPair<IHttpRouteData, IPipeline<IHttpContext>> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
 
-    const value = this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach);
+    const value = route
+      ? this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach)
+      : HttpPipeline.empty();
 
-    return route ? { key: { url: route.url, method: route.method }, value } : { key: undefined, value: [] };
+    return route ? { key: { url: route.url, method: route.method }, value } : { key: undefined, value };
   }
 
   /**
@@ -134,21 +137,31 @@ export class HttpRouteMap {
    *
    * @param {string | RegExp} url
    * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {IHttpMiddlewareLike[]} middleware
+   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
    * @returns {this}
    */
-  public add(url: string | RegExp, methods: Array<keyof typeof HttpMethods>, middleware: IHttpMiddlewareLike[]) {
+  public add(
+    url: string | RegExp,
+    methods: Array<keyof typeof HttpMethods>,
+    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+  ) {
     url = mergePrefixAndUrl(this._prefix, url);
     methods.forEach((method) => {
       const key =
         typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
 
-      this._routes.set(key, middleware);
+      this._routes.set(key, isPipeline(middleware) ? middleware : HttpPipeline.of(middleware));
     });
 
     return this;
   }
 
+  /**
+   * Check if internal map has given key.
+   *
+   * @param {IHttpMatcher<string | RegExp>} key
+   * @returns {boolean}
+   */
   public has(key: IHttpMatcher<string | RegExp>): boolean {
     return !!Array.from(this._routes.keys()).find((x) => x.url === key.url && x.method === key.method);
   }
@@ -172,7 +185,7 @@ export class HttpRouteMap {
       (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
     });
 
-    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), this._prefix)
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]) as any, this._prefix)
       .beforeEach(this._beforeEach.concat(o._beforeEach))
       .afterEach(o._afterEach.concat(this._afterEach));
   }

@@ -6,4 +6,5 @@ export * from './middleware-context.interface';
 export * from './middleware-function.interface';
 export * from './middleware-like.interface';
 export * from './pair.interface';
+export * from './pipeline.interface';
 export * from './route-data.interface';
