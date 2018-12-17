@@ -1,5 +1,5 @@
 import { isMiddlewareObject } from '../common/guards';
-import { IPipeline } from '../common/interfaces/pipeline.interface';
+import { IPipeline } from '../common/interfaces';
 import { HttpRouter } from './http-router';
 import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
 
