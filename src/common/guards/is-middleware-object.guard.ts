@@ -6,4 +6,4 @@ import { IMiddleware } from '../interfaces';
  * @param x
  * @returns {x is IMiddleware<any>}
  */
-export const isMiddlewareObject = (x: any): x is IMiddleware<any> => '$process' in x;
+export const isMiddlewareObject = (x: any): x is IMiddleware<any> => typeof x === 'object' && '$process' in x;

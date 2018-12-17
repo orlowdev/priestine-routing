@@ -6,4 +6,4 @@ import { IHttpContext } from './http-context.interface';
  *
  * @type IMiddlewareFunction<IHttpContext>
  */
-export type HttpMiddlewareFunctionInterface = IMiddlewareFunction<IHttpContext>;
+export type IHttpMiddlewareFunction = IMiddlewareFunction<IHttpContext>;

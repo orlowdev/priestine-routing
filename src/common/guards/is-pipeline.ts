@@ -6,4 +6,5 @@ import { IPipeline } from '../interfaces';
  * @param x
  * @returns {x is IMiddleware<any>}
  */
-export const isPipeline = (x: any): x is IPipeline<any> => '$process' in x && 'done' in x && 'isEmpty' in x;
+export const isPipeline = (x: any): x is IPipeline<any> =>
+  '$process' in x && 'done' in x && 'isEmpty' in x && 'next' in x && 'throw' in x;
