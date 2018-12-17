@@ -4,10 +4,11 @@ import { IDefaultHttpIntermediate } from './default-http-intermediate.interface'
 
 /**
  * Http context describes argument passed to each Middleware.process method.
+ *
  * @interface IHttpContext
  * @extends IMiddlewareContext
  */
-export interface IHttpContext extends IMiddlewareContext {
+export interface IHttpContext<T = {}> extends IMiddlewareContext<T> {
   /**
    * Node.js http.IncomingMessage.
    */
@@ -21,5 +22,5 @@ export interface IHttpContext extends IMiddlewareContext {
   /**
    * Data passed from previous middleware.
    */
-  intermediate: IDefaultHttpIntermediate;
+  intermediate: IDefaultHttpIntermediate & T;
 }

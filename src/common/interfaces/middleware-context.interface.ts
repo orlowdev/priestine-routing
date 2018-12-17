@@ -6,9 +6,9 @@ import { IDefaultIntermediate } from './default-intermediate.interface';
  *
  * @interface IMiddlewareContext
  */
-export interface IMiddlewareContext {
+export interface IMiddlewareContext<TAdditional = {}> {
   /**
    * Data passed from previous middleware.
    */
-  intermediate: IDefaultIntermediate;
+  intermediate: IDefaultIntermediate & TAdditional;
 }

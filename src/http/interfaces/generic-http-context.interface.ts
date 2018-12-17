@@ -6,6 +6,7 @@ import { IHttpContext } from './http-context.interface';
  *
  * @interface IGenericHttpContext<TIntermediate>
  * @extends IHttpContext
+ * @deprecated use IHttpContext<T> instead
  */
 export interface IGenericHttpContext<TIntermediate> extends IHttpContext {
   /**
