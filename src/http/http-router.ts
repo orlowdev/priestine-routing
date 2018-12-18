@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events';
 import { IPipeline } from '../common/interfaces';
 import { HttpMethods } from './enums';
-import { HttpPipeline } from './http-pipeline';
 import { HttpRouteMap } from './http-route-map';
 import { IHttpContext, IHttpMatcher, IHttpMiddlewareLike } from './interfaces';
 
@@ -221,10 +220,3 @@ export class HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
   }
 }
-
-//const rt = HttpRouter.empty().get('/', [() => {
-//  throw new Error('he');
-//}]);
-
-//HttpRouter.eventEmitter.on('pipelineError', () => console.log('here'));
-//rt.routeMap.find({ url: '/', method: 'GET'} as any).value.$process({ intermediate: {}} as any);
