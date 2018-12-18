@@ -4,7 +4,6 @@ import { IMatcher } from '../../common/interfaces';
 import { HttpMethods } from '../enums';
 import { mergePrefixAndUrl } from '../helpers';
 import { IHttpMatcher } from '../interfaces';
-import { RegExpHttpMatcher, StringHttpMatcher } from '../matchers';
 
 /**
  * Base HTTP matcher.
@@ -74,11 +73,7 @@ export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
    * @param prefix
    * @returns {IMatcher<TUrl, TRequest>}
    */
-  withPrefix(prefix: string | RegExp): IHttpMatcher<any> {
-    const url = mergePrefixAndUrl(prefix, this.url as any);
-    const method = this._method;
-    return typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
-  }
+  public abstract withPrefix(prefix: string | RegExp): IHttpMatcher<any>;
 
   /**
    * Extract IncomingMessage URL pathname.
