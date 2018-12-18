@@ -359,14 +359,14 @@ subscribe to events. Internally, there is only one base event that is emitted by
 **pipelineError**. This event is emitted if incoming request does not match any of registered routes:
 
 ```javascript
-HttpRouter.eventEmitter.on('pipelineError', HttpPipeline.of([
+HttpRouter.eventEmitter.on('pipelineError', (ctx) => HttpPipeline.of([
   (ctx) => ctx.response.setHeader('Content-Type', 'application/json'),
   (ctx) => ctx.intermediate.body = {
     success: false,
     message: ctx.intermediate.error.message,
   },
   (ctx) => ctx.response.end(JSON.stringify(ctx.intermediate.body)),
-]).$process);
+]).$process(ctx));
 ```
 
 If something goes wrong, the middleware pipeline is aborted and a new pipeline assigned with event listener
