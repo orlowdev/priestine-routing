@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { HttpPipeline } from '../http-pipeline';
+import { HttpError } from '../errors';
 import { HttpRouter } from '../http-router';
 import { IHttpContext } from '../interfaces';
 
@@ -28,8 +28,10 @@ export const withHttpRouter = (router: HttpRouter) => (
   };
 
   if (route.value.isEmpty) {
-    ctx.intermediate.error = new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`);
-    HttpRouter.handleError(ctx);
+    ctx.intermediate.error = HttpError.from(
+      new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`)
+    ).withStatusCode(404);
+    HttpRouter.eventEmitter.emit('pipelineError', ctx);
     return;
   }
 

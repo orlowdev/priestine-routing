@@ -1,3 +1,4 @@
+import { IHttpMiddlewareLike } from '../../http/interfaces';
 import { IMiddlewareContext } from './middleware-context.interface';
 import { IMiddlewareLike } from './middleware-like.interface';
 
@@ -31,4 +32,16 @@ export interface IPipeline<TContext extends IMiddlewareContext> extends Iterable
    * @returns {IPipeline<TContext>}
    */
   concat(x: IPipeline<TContext>): IPipeline<TContext>;
+
+  /**
+   * @param {IHttpMiddlewareLike} value
+   * @returns {IMiddlewareLike<TContext>}
+   */
+  next(value?: IHttpMiddlewareLike): IteratorResult<IMiddlewareLike<TContext>>;
+
+  /**
+   * @param value
+   * @returns {IteratorResult<any>}
+   */
+  throw(value?: any): IteratorResult<any>;
 }

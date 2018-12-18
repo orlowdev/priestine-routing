@@ -1,6 +1,9 @@
 import { IncomingMessage } from 'http';
 import { BaseHttpMatcher } from '../core';
 import { HttpMethods } from '../enums';
+import { mergePrefixAndUrl } from '../helpers';
+import { IHttpMatcher } from '../interfaces';
+import { RegExpHttpMatcher } from './regexp-http-matcher';
 
 /**
  * String-based route matcher. String-based route matchers should be used at all times when no dynamic content is
@@ -29,5 +32,17 @@ export class StringHttpMatcher extends BaseHttpMatcher<string> {
    */
   public matches({ url, method }: IncomingMessage): boolean {
     return this._url === super.getPathname(url) && this._method === method;
+  }
+
+  /**
+   * Prepend given prefix to matcher URL.
+   *
+   * @param prefix
+   * @returns {IMatcher<TUrl, TRequest>}
+   */
+  withPrefix(prefix: string | RegExp): IHttpMatcher<any> {
+    const url = mergePrefixAndUrl(prefix, this.url as any);
+    const method = this._method;
+    return typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
   }
 }

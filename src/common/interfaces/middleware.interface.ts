@@ -7,5 +7,11 @@
  * @interface IMiddleware<TContext>
  */
 export interface IMiddleware<TContext> {
+  /**
+   * Process current middleware with given context.
+   *
+   * @param {TContext} ctx
+   * @returns {any}
+   */
   $process(ctx: TContext): any;
 }

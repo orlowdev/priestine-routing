@@ -1,5 +1,6 @@
 import { isMiddlewareObject } from '../common/guards';
 import { IPipeline } from '../common/interfaces';
+import { isHttpMiddlewareContext } from './guards';
 import { HttpRouter } from './http-router';
 import { IHttpContext, IHttpMiddlewareLike } from './interfaces';
 
@@ -90,14 +91,19 @@ export class HttpPipeline implements IPipeline<IHttpContext> {
    * @returns {Promise<void>}
    */
   public async $process(ctx: IHttpContext): Promise<void> {
+    let internalCtx = { ...ctx };
     while (!this.done) {
       try {
         const next = this.next().value;
         const process = isMiddlewareObject(next) ? next.$process : next;
-        await process(ctx);
+        const result = await process(internalCtx);
+
+        if (result && isHttpMiddlewareContext(result)) {
+          internalCtx = { ...result };
+        }
       } catch (e) {
         ctx.intermediate.error = e;
-        await HttpRouter.handleError(ctx);
+        HttpRouter.eventEmitter.emit('pipelineError', ctx);
         return;
       }
     }

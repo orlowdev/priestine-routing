@@ -1,6 +1,8 @@
 import { IncomingMessage } from 'http';
 import { parse } from 'url';
+import { IMatcher } from '../../common/interfaces';
 import { HttpMethods } from '../enums';
+import { mergePrefixAndUrl } from '../helpers';
 import { IHttpMatcher } from '../interfaces';
 
 /**
@@ -16,12 +18,14 @@ import { IHttpMatcher } from '../interfaces';
 export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
   /**
    * URL for matching.
+   *
    * @protected
    */
   protected _url: T;
 
   /**
    * HTTP method for matching.
+   *
    * @protected
    */
   protected _method: keyof typeof HttpMethods;
@@ -38,6 +42,7 @@ export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
 
   /**
    * URL for matching.
+   *
    * @returns {T}
    */
   public get url(): T {
@@ -46,6 +51,7 @@ export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
 
   /**
    * Method for matching.
+   *
    * @returns {keyof typeof HttpMethods}
    */
   public get method(): keyof typeof HttpMethods {
@@ -54,11 +60,20 @@ export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
 
   /**
    * Check if current IncomingMessage matches current route.
+   *
    * @param {string} url
    * @param {string} method
    * @returns {boolean}
    */
   public abstract matches({ url, method }: IncomingMessage): boolean;
+
+  /**
+   * Prepend given prefix to matcher URL.
+   *
+   * @param prefix
+   * @returns {IMatcher<TUrl, TRequest>}
+   */
+  public abstract withPrefix(prefix: string | RegExp): IHttpMatcher<any>;
 
   /**
    * Extract IncomingMessage URL pathname.
