@@ -2,7 +2,7 @@
 
 [![pipeline](https://gitlab.com/priestine/routing/badges/master/pipeline.svg)](https://gitlab.com/priestine/routing) [![codecov](https://codecov.io/gl/priestine/routing/branch/master/graph/badge.svg)](https://codecov.io/gl/priestine/routing) [![licence: MIT](https://img.shields.io/npm/l/@priestine/routing.svg)](https://gitlab.com/priestine/routing) [![docs: typedoc](https://img.shields.io/badge/docs-typedoc-blue.svg)](https://priestine.gitlab.io/routing) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier) [![versioning: semantics](https://img.shields.io/badge/versioning-semantics-912e5c.svg)](https://gitlab.com/priestine/semantics) [![npm](https://img.shields.io/npm/dt/@priestine/routing.svg)](https://www.npmjs.com/package/@priestine/routing) [![npm](https://img.shields.io/npm/v/@priestine/routing.svg)](https://www.npmjs.com/package/@priestine/routing) [![bundlephobia-min](https://img.shields.io/bundlephobia/min/@priestine/routing.svg)](https://bundlephobia.com/result?p=@priestine/routing) [![bundlephobia-minzip](https://img.shields.io/bundlephobia/minzip/@priestine/routing.svg)](https://bundlephobia.com/result?p=@priestine/routing)
 
-`@priestine/routing` brings simple and eloquent routing to Node.js. It currently only works with Node.js `http` server
+`@priestine/routing` brings simple and eloquent routing to Node.js. It currently only works with Node.js `http` and `https`
 yet new releases aim to support other APIs.
 
 ## TL;DR
@@ -339,6 +339,8 @@ export const GetUser = (ctx: IHttpContext<IUserAware>) => {
 The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a helper
 `withHttpRouter` and pass it to `http.createServer` as an argument:
 
+#### HTTP
+
 ```javascript
 import { createServer } from 'http';
 import { HttpRouter, withHttpRouter } from '@priestine/routing';
@@ -350,6 +352,28 @@ const router = HttpRouter.empty()
 ;
 
 createServer(withHttpRouter(router)).listen(3000);
+```
+
+#### HTTPS
+
+```javascript
+import { createServer } from 'https';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { HttpRouter, withHttpRouter } from '@priestine/routing';
+
+const router = HttpRouter.empty()
+  .get('/', [
+    (ctx) => ctx.response.end('hi'),
+  ])
+;
+
+const options = {
+  key: readFileSync(resolve('/path/to/certificate/key.pem')),
+  cert: readFileSync(resolve('/path/to/certificate/cert.pem')),
+};
+
+createServer(options, withHttpRouter(router)).listen(3000);
 ```
 
 ### Error handling
