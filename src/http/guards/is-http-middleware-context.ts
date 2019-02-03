@@ -1,5 +1,5 @@
-import { isMiddlewareContext } from '../../common/guards';
 import { IHttpContext } from '../interfaces';
+import { isMiddlewareContext } from '@priestine/data/src';
 
 /**
  * Check if argument is middleware context.

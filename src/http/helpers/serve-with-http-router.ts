@@ -6,6 +6,9 @@ import { IHttpContext } from '../interfaces';
 /**
  * Serve incoming HTTP requests using provided Router.
  *
+ * @deprecated You have to implement using the Router yourself. The implementation for this code will be available
+ * as part of opinionated microframework `@priestine/ascendance`.
+ *
  * @param {HttpRouter} router
  * @returns {(request: IncomingMessage, response: ServerResponse) => Promise<void>}
  */
@@ -31,9 +34,8 @@ export const withHttpRouter = (router: HttpRouter) => (
     ctx.intermediate.error = HttpError.from(
       new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`)
     ).withStatusCode(404);
-    HttpRouter.eventEmitter.emit('pipelineError', ctx);
     return;
   }
 
-  route.value.$process(ctx);
+  route.value.process(ctx);
 };

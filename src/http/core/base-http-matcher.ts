@@ -2,7 +2,6 @@ import { IncomingMessage } from 'http';
 import { parse } from 'url';
 import { IMatcher } from '../../common/interfaces';
 import { HttpMethods } from '../enums';
-import { mergePrefixAndUrl } from '../helpers';
 import { IHttpMatcher } from '../interfaces';
 
 /**

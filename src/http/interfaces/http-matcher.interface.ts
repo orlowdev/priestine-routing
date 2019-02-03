@@ -5,7 +5,7 @@ import { HttpMethods } from '../enums';
 /**
  * Describes route stored in the route map that can be mapped to current request.
  */
-export interface IHttpMatcher<T> extends IMatcher<T, IncomingMessage> {
+export interface IHttpMatcher<T = string> extends IMatcher<T, IncomingMessage> {
   /**
    * HTTP method that current request must match to be considered mappable.
    */
