@@ -7,6 +7,8 @@ import { STATUS_CODES } from 'http';
  *
  * @class HttpError
  * @extends Error
+ *
+ * @deprecated HttpError is going to be moved into separate package in future releases.
  */
 export class HttpError extends Error {
   /**

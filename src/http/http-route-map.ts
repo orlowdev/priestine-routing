@@ -5,7 +5,7 @@ import { IPair } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { isHttpMatcher } from './guards';
 import { mergePrefixAndUrl } from './helpers';
-import { HttpPipelineInterface, IHttpContext, IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
+import { HttpPipelineInterface, IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
 /**
@@ -30,7 +30,7 @@ export class HttpRouteMap {
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
    * @returns {HttpRouteMap}
    */
-  public static of(routes: Map<IHttpMatcher<string | RegExp>, Pipeline<any, IHttpContext>>) {
+  public static of(routes: Map<IHttpMatcher<string | RegExp>, HttpPipelineInterface>) {
     return new HttpRouteMap(routes);
   }
 
@@ -85,7 +85,10 @@ export class HttpRouteMap {
    * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
    * @param {string | RegExp} prefix
    */
-  public constructor(routes: Map<IHttpMatcher<string | RegExp>, Pipeline> = new Map(), prefix: string | RegExp = '') {
+  public constructor(
+    routes: Map<IHttpMatcher<string | RegExp>, HttpPipelineInterface> = new Map(),
+    prefix: string | RegExp = ''
+  ) {
     this._routes = routes;
     this._prefix = prefix;
   }
@@ -115,10 +118,10 @@ export class HttpRouteMap {
   }
 
   /**
-   * Find matching route for current IncomingMessage and return an IPair<IHttpRouteData, IHttpMiddlewareLike[]>.
+   * Find matching route for current IncomingMessage and return an IPair<IHttpRouteData, HttpPipelineInterface>.
    *
    * @param {IncomingMessage} message
-   * @returns {IPair<IHttpRouteData, Pipeline>}
+   * @returns {IPair<IHttpRouteData, HttpPipelineInterface>}
    */
   public find(message: IncomingMessage): IPair<IHttpRouteData, HttpPipelineInterface> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
