@@ -52,6 +52,7 @@ coverage:report:
     - bash <(curl -s https://codecov.io/bash) -t "${CODECOV_TOKEN}" -f coverage/*.json
   only:
     - master
+  allow_failure: true
 
 versioning:
   stage: deploy

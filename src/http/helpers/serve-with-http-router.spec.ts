@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { HttpPipeline } from '../http-pipeline';
 import { HttpRouter } from '../http-router';
 import { withHttpRouter } from './serve-with-http-router';
 
@@ -29,17 +28,5 @@ describe('withHttpRouter', () => {
       .get('/1', []);
     withHttpRouter(rt)({ url: '/', method: 'GET' } as any, {} as any);
     expect(rt.routeMap.sorted).to.equal(true);
-  });
-
-  it('should emit pipelineError event if error was thrown', () => {
-    let test;
-    HttpRouter.eventEmitter.on('pipelineError', () => (test = 1));
-    const errorPpl = HttpPipeline.of([
-      (ctx) => {
-        throw new Error('test');
-      },
-    ]);
-    withHttpRouter(HttpRouter.empty().get('/', errorPpl))({ url: '/', method: 'GET' } as any, {} as any);
-    expect(test).to.equal(1);
   });
 });
