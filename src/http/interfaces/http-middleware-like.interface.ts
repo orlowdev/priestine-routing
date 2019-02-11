@@ -1,4 +1,4 @@
-import { HttpMiddlewareFunction } from './http-middleware.function';
+import { HttpMiddlewareFunction } from './http-middleware-function.interface';
 import { HttpMiddlewareInterface } from './http-middleware.interface';
 
 /**
