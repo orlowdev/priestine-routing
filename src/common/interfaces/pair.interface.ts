@@ -3,7 +3,7 @@
  *
  * @interface Pair<K, V>
  */
-export interface IPair<K, V> {
+export interface PairInterface<K, V> {
   key: K;
   value: V;
 }

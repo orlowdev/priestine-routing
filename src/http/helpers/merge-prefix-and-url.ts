@@ -2,7 +2,7 @@
  * Merge given prefix with given string. If at least one of them is a RegExp, new RegExp will be returned.
  * @param {string | RegExp} prefix
  * @param {string | RegExp} url
- * @returns {IHttpMatcher}
+ * @returns {HttpMatcherInterface}
  */
 export const mergePrefixAndUrl = (prefix: string | RegExp, url: string | RegExp): string | RegExp => {
   if (!prefix) {

@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { HttpError } from '../errors';
 import { HttpRouter } from '../http-router';
-import { IHttpContext } from '../interfaces';
+import { HttpContextInterface } from '../interfaces';
 
 /**
  * Serve incoming HTTP requests using provided Router.
@@ -22,7 +22,7 @@ export const withHttpRouter = (router: HttpRouter) => (
 
   const route = router.routeMap.find(request);
 
-  const ctx: IHttpContext = {
+  const ctx: HttpContextInterface = {
     request,
     response,
     intermediate: {

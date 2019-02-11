@@ -1,9 +1,9 @@
-import { IHttpMiddlewareFunction } from './http-middleware-function.interface';
-import { IHttpMiddleware } from './http-middleware.interface';
+import { HttpMiddlewareFunction } from './http-middleware.function';
+import { HttpMiddlewareInterface } from './http-middleware.interface';
 
 /**
  * Descriptor for HTTP Middleware represented as either class-based middleware or function middleware.
  *
- * @type IHttpMiddleware | IHttpMiddlewareFunction
+ * @type HttpMiddlewareInterface | HttpMiddlewareFunction
  */
-export type IHttpMiddlewareLike = IHttpMiddleware | IHttpMiddlewareFunction;
+export type HttpMiddlewareLike = HttpMiddlewareInterface | HttpMiddlewareFunction;

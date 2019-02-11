@@ -1,4 +1,4 @@
-import { IHttpContext } from './http-context.interface';
+import { HttpContextInterface } from './http-context.interface';
 import { PipelineInterface } from '@priestine/data/src';
 
 /**
@@ -7,6 +7,6 @@ import { PipelineInterface } from '@priestine/data/src';
  * @interface HttpPipelineInterface
  * @deprecated Will be removed in future releases
  */
-export interface HttpPipelineInterface<T = {}> extends PipelineInterface<T, IHttpContext> {
+export interface HttpPipelineInterface<T = {}> extends PipelineInterface<T, HttpContextInterface> {
   concat(o: HttpPipelineInterface): HttpPipelineInterface;
 }
