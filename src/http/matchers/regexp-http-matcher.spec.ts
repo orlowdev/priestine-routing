@@ -20,5 +20,11 @@ describe('RegExpHttpMatcher', () => {
         RegExpHttpMatcher.of({ url: /^\/?$/, method: 'GET' }).matches({ url: '/?a=b', method: 'GET' } as any)
       ).to.equal(true);
     });
+
+    it('should return RegExpHttpMatcher even if prefix or url is a string', () => {
+      expect(RegExpHttpMatcher.of({ url: /^\/?$/, method: 'GET' }).withPrefix('/api')).to.be.instanceOf(
+        RegExpHttpMatcher
+      );
+    });
   });
 });

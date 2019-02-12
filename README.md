@@ -2,7 +2,7 @@
 
 [![pipeline](https://gitlab.com/priestine/routing/badges/master/pipeline.svg)](https://gitlab.com/priestine/routing) [![codecov](https://codecov.io/gl/priestine/routing/branch/master/graph/badge.svg)](https://codecov.io/gl/priestine/routing) [![licence: MIT](https://img.shields.io/npm/l/@priestine/routing.svg)](https://gitlab.com/priestine/routing) [![docs: typedoc](https://img.shields.io/badge/docs-typedoc-blue.svg)](https://priestine.gitlab.io/routing) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier) [![versioning: semantics](https://img.shields.io/badge/versioning-semantics-912e5c.svg)](https://gitlab.com/priestine/semantics) [![npm](https://img.shields.io/npm/dt/@priestine/routing.svg)](https://www.npmjs.com/package/@priestine/routing) [![npm](https://img.shields.io/npm/v/@priestine/routing.svg)](https://www.npmjs.com/package/@priestine/routing) [![bundlephobia-min](https://img.shields.io/bundlephobia/min/@priestine/routing.svg)](https://bundlephobia.com/result?p=@priestine/routing) [![bundlephobia-minzip](https://img.shields.io/bundlephobia/minzip/@priestine/routing.svg)](https://bundlephobia.com/result?p=@priestine/routing)
 
-`@priestine/routing` brings simple and eloquent routing to Node.js. It currently only works with Node.js `http` server
+`@priestine/routing` brings simple and eloquent routing to Node.js. It currently only works with Node.js `http` and `https`
 yet new releases aim to support other APIs.
 
 ## TL;DR
@@ -21,9 +21,9 @@ const router = HttpRouter.empty();
 */
 
 // Curried for creating header builders
-// `ctx` has { request: IncomingMessage, response: ServerResponse, intermediate: {/* Your data */}, error? } 
-const setHeader = (name) => (value) => (ctx) => {
-  ctx.response.setHeader(name, value);
+// `ctx` has { request: IncomingMessage, response: ServerResponse, intermediate: {/* Your data plus { route (matched route), error? } */} } 
+const setHeader = (name) => (value) => ({ response }) => {
+  response.setHeader(name, value);
 };
 
 // Specifically, a Content-Type header builder (we could make it in one go tho)
@@ -31,8 +31,8 @@ const setContentTypeHeader = setHeader('Content-Type');
 
 // Anything to be passed to the next middleware should be put to ctx.intermediate
 // to keep request and response Node.js-ly pure
-const buildHello = (ctx) => {
-    ctx.intermediate.helloWorld = {
+const buildHello = ({ intermediate }) => {
+    intermediate.helloWorld = {
       id: 'hello-world',
       message: 'Hello World!',
     }
@@ -89,8 +89,9 @@ Routing consists of a few components one should grasp to build routing efficient
   - `router.register` accepts three required arguments:
     - **url** - a string or a RegExp describing the URL pathname IncomingMessage url must match
     - **methods** - an array of HTTP methods that IncomingMessage method must be in
-    - **middleware** - an array of `IMiddlewareLike` or an `HttpPipeline` that will be processed if current
-    IncomingMessage matches given url and methods
+    - **middleware** - an array of `HttpMiddlewareLike` or an `Pipeline` that will be processed if current
+    IncomingMessage matches given url and methods (**NOTE** if you want to use `Pipeline`s you need to also
+    `yarn add @priestine/data`)
     
     ```javascript
     const router = HttpRouter.empty();
@@ -99,7 +100,7 @@ Routing consists of a few components one should grasp to build routing efficient
         (ctx) => ctx.response.setHeader('Content-Type', 'application/json'),
         (ctx) => ctx.response.end('{ "success": true }'),
       ])
-      .register('/1', ['GET'], MyCustomHttpPipeline)
+      .register('/1', ['GET'], MyCustomPipeline)
     ;
     ```
 
@@ -109,13 +110,13 @@ Routing consists of a few components one should grasp to build routing efficient
     ```javascript
     const router = HttpRouter.empty();
     router.get('/', [
-      (ctx) => ctx.response.setHeader('Content-Type', 'application/json'),
-      (ctx) => ctx.response.end('{ "success": true }'),
+      ({ response }) => response.setHeader('Content-Type', 'application/json'),
+      ({ response }) => response.end('{ "success": true }'),
     ]);
     ```
     
   - `router.beforeEach` and `router.afterEach` accept array of middleware or a pipeline that will be executed
-  before/after each registered pipeline
+  before/after each registered pipeline.
   
     ```javascript
     const runBeforeEach = [
@@ -168,9 +169,9 @@ Routing consists of a few components one should grasp to build routing efficient
     MainRouter.concat(ApiRouter);
     ```
 
-### Middleware
+### HttpMiddleware
  
-Middleware is a reusable piece of business logic that encapsulates one specific step.
+HttpMiddleware is a reusable piece of business logic that encapsulates one specific step.
 Middleware in `@priestine/routing` can be function- or class-based. Each middleware is provided with `ctx` argument:
  
 ```javascript
@@ -218,7 +219,7 @@ router.get('/', [
 
 #### Class-based Middleware
 
-**Class-based middleware** must implement `IMiddleware` interface (it must have a `$process`) method that accepts `ctx`.
+**Class-based middleware** must implement `HttpMiddlewareInterface` interface (it must have a `process`) method that accepts `ctx`.
 
 **NOTE**: When registering middleware in the Router, you must provide an **instance** of a class-based middleware.
 
@@ -232,7 +233,7 @@ class SetContentTypeHeader {
     this.value = value;
   }
   
-  $process(ctx) {
+  process(ctx) {
     ctx.response.setHeader('Content-Type', this.value);
   }
 }
@@ -276,11 +277,10 @@ HttpRouter.empty()
 ;
 ```
 
-
 - **waterfall** execution blocks the pipeline until current middleware is done. This is convenient in cases where further
 execution of the pipeline heavily relies on the result of computation. To inform the pipeline that it needs to wait for
 current middleware to resolve, you need to return a Promise inside the middleware. This can be referred to as Eager
-execution. Example:
+execution. **NOTE** this doesn't block JavaScript event loop. Example:
 
 ```javascript
 /**
@@ -317,17 +317,17 @@ HttpRouter.empty()
 `ctx.intermediate`:
 
 ```typescript
-import { IHttpContext } from '@priestine/routing';
+import { HttpContextInterface } from '@priestine/routing';
 
-interface IUserAware {
+interface UserAware {
   user: {
     _id: string;
     name: string;
   };
 }
 
-export const GetUser = (ctx: IHttpContext<IUserAware>) => {
-  ctx.intermediate.user = {
+export const GetUser = ({ intermediate }: HttpContextInterface<UserAware>) => {
+  intermediate.user = {
     _id: '123123123123',
     name: 'Test User',
   };
@@ -338,6 +338,8 @@ export const GetUser = (ctx: IHttpContext<IUserAware>) => {
 
 The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a helper
 `withHttpRouter` and pass it to `http.createServer` as an argument:
+
+#### HTTP
 
 ```javascript
 import { createServer } from 'http';
@@ -352,27 +354,44 @@ const router = HttpRouter.empty()
 createServer(withHttpRouter(router)).listen(3000);
 ```
 
-### Error handling
-
-Error handling in `@priestine/routing` provides a statically available event emitter that you can use to trigger and/or
-subscribe to events. Internally, there is only one base event that is emitted by `@priestine/routing` which is called
-**pipelineError**. This event is emitted if incoming request does not match any of registered routes:
+#### HTTPS
 
 ```javascript
-HttpRouter.eventEmitter.on('pipelineError', (ctx) => HttpPipeline.of([
-  (ctx) => ctx.response.setHeader('Content-Type', 'application/json'),
-  (ctx) => ctx.intermediate.body = {
-    success: false,
-    message: ctx.intermediate.error.message,
-  },
-  (ctx) => ctx.response.end(JSON.stringify(ctx.intermediate.body)),
-]).$process(ctx));
+import { createServer } from 'https';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { HttpRouter, withHttpRouter } from '@priestine/routing';
+
+const router = HttpRouter.empty()
+  .get('/', [
+    ({ response }) => response.end('hi'),
+  ])
+;
+
+const options = {
+  key: readFileSync(resolve('/path/to/certificate/key.pem')),
+  cert: readFileSync(resolve('/path/to/certificate/cert.pem')),
+};
+
+createServer(options, withHttpRouter(router)).listen(3000);
 ```
 
-If something goes wrong, the middleware pipeline is aborted and a new pipeline assigned with event listener
-is processed using the `ctx` of the pipeline that broke down. You can debug the nature of the
-error by checking the contents of the `ctx.intermediate` as it will have all the amendments up to the moment where it
-crashed.
+**NOTE**: `withHttpRouter` is opinionated and in case error occurs it always returns JSON response with the status code
+and status message of the error in the response head as well as the error message in the response body, wrapped into
 
-To force quitting current pipeline, you can either **throw** (synchronous middleware) or **reject()** (asynchronous
-middleware).
+```json
+{
+  "success": false,
+  "message": "ERROR_MESSAGE"
+}
+```
+
+If you wish to amend this behaviour, you can create your own Router wrapper.
+See https://gitlab.com/priestine/routing/blob/dev/src/http/helpers/serve-with-http-router.ts for details.
+**NOTE**: `withHttpRouter` is marked deprecated and will be removed in future releases due to it opinionated behaviour
+that doesn't correlate to the app concept.
+
+### Error handling
+
+To force quitting current pipeline, you can either **throw** (synchronous middleware) or **reject(e)** (asynchronous
+middleware). The `error` object will be bound to `ctx` alongside `request`, `response` and `intermediate`.

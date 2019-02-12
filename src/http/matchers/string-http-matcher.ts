@@ -2,7 +2,7 @@ import { IncomingMessage } from 'http';
 import { BaseHttpMatcher } from '../core';
 import { HttpMethods } from '../enums';
 import { mergePrefixAndUrl } from '../helpers';
-import { IHttpMatcher } from '../interfaces';
+import { HttpMatcherInterface } from '../interfaces';
 import { RegExpHttpMatcher } from './regexp-http-matcher';
 
 /**
@@ -38,9 +38,9 @@ export class StringHttpMatcher extends BaseHttpMatcher<string> {
    * Prepend given prefix to matcher URL.
    *
    * @param prefix
-   * @returns {IMatcher<TUrl, TRequest>}
+   * @returns {MatcherInterface<TUrl, TRequest>}
    */
-  withPrefix(prefix: string | RegExp): IHttpMatcher<any> {
+  withPrefix(prefix: string | RegExp): HttpMatcherInterface<any> {
     const url = mergePrefixAndUrl(prefix, this.url as any);
     const method = this._method;
     return typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });

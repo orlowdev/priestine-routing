@@ -1,14 +1,14 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { IMiddlewareContext } from '../../common/interfaces';
-import { IDefaultHttpIntermediate } from './default-http-intermediate.interface';
+import { DefaultHttpIntermediateInterface } from './default-http-intermediate.interface';
+import { MiddlewareContextInterface } from '@priestine/data/src';
 
 /**
  * Http context describes argument passed to each Middleware.process method.
  *
- * @interface IHttpContext
- * @extends IMiddlewareContext
+ * @interface HttpContextInterface
+ * @extends MiddlewareContextInterface
  */
-export interface IHttpContext<T = {}> extends IMiddlewareContext<T> {
+export interface HttpContextInterface<T = {}> extends MiddlewareContextInterface<T> {
   /**
    * Node.js http.IncomingMessage.
    */
@@ -22,5 +22,5 @@ export interface IHttpContext<T = {}> extends IMiddlewareContext<T> {
   /**
    * Data passed from previous middleware.
    */
-  intermediate: IDefaultHttpIntermediate & T;
+  intermediate: DefaultHttpIntermediateInterface & T;
 }

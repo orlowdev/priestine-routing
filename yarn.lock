@@ -238,6 +238,11 @@
     mkdirp "^0.5.1"
     rimraf "^2.5.2"
 
+"@priestine/data@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@priestine/data/-/data-3.1.0.tgz#e1d998e2a5e8083498d04a84e6ac73135b5ef1d3"
+  integrity sha512-38o4zoRt0nMkBYR6plS97Nij1qWtemXJ7urWimApnmLLJhrvAedquTtNyz5cz1TjTmvlj+taRf5f2FPhtaPM5A==
+
 "@types/chai@^4.1.7":
   version "4.1.7"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.1.7.tgz#1b8e33b61a8c09cbe1f85133071baa0dbf9fa71a"

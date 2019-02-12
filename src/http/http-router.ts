@@ -1,8 +1,7 @@
-import { EventEmitter } from 'events';
-import { IPipeline } from '../common/interfaces';
+import { PipelineInterface } from '@priestine/data';
 import { HttpMethods } from './enums';
 import { HttpRouteMap } from './http-route-map';
-import { IHttpContext, IHttpMatcher, IHttpMiddlewareLike } from './interfaces';
+import { HttpMatcherInterface, HttpMiddlewareLike } from './interfaces';
 
 /**
  * HTTP router provides fluent interface for registering routeMap.
@@ -22,7 +21,7 @@ export class HttpRouter {
   /**
    * Create an empty HttpRouter with prefix assigned to be added to each route url.
    *
-   * @param {IHttpMatcher<any> | >string | RegExp} prefix
+   * @param {HttpMatcherInterface | string | RegExp} prefix
    * @returns {HttpRouter}
    */
   public static withPrefix(prefix: string | RegExp) {
@@ -42,13 +41,6 @@ export class HttpRouter {
   }
 
   /**
-   * Static router event bus.
-   *
-   * @type {module:events.internal.EventEmitter}
-   */
-  public static eventEmitter = new EventEmitter();
-
-  /**
    * Internally stored HttpRouteMap.
    *
    * @type {HttpRouteMap}
@@ -66,10 +58,10 @@ export class HttpRouter {
   /**
    * Register middleware to be run before each Pipeline.
    *
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public beforeEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
+  public beforeEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouter {
     this._routeMap.beforeEach(middleware);
 
     return this;
@@ -78,10 +70,10 @@ export class HttpRouter {
   /**
    * Register middleware to be run after each Pipeline.
    *
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
-  public afterEach(middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]): HttpRouter {
+  public afterEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouter {
     this._routeMap.afterEach(middleware);
 
     return this;
@@ -100,15 +92,15 @@ export class HttpRouter {
   /**
    * Register a new route in the Router.routeMap.
    *
-   * @param {IHttpMatcher<any> | >string | RegExp} url
+   * @param {HttpMatcherInterface | string | RegExp} url
    * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {this}
    */
   public register(
-    url: IHttpMatcher<any> | string | RegExp,
+    url: HttpMatcherInterface | string | RegExp,
     methods: Array<keyof typeof HttpMethods>,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ) {
     this._routeMap.add(url, methods, middleware);
 
@@ -119,13 +111,13 @@ export class HttpRouter {
    * Helper method for registering GET routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
   public get(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.GET], middleware);
   }
@@ -134,13 +126,13 @@ export class HttpRouter {
    * Helper method for registering POST routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public post(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.POST], middleware);
   }
@@ -149,13 +141,13 @@ export class HttpRouter {
    * Helper method for registering PUT routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public put(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.PUT], middleware);
   }
@@ -164,13 +156,13 @@ export class HttpRouter {
    * Helper method for registering PATCH routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public patch(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.PATCH], middleware);
   }
@@ -179,13 +171,13 @@ export class HttpRouter {
    * Helper method for registering DELETE routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public delete(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.DELETE], middleware);
   }
@@ -194,13 +186,13 @@ export class HttpRouter {
    * Helper method for registering OPTIONS routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public options(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.OPTIONS], middleware);
   }
@@ -209,13 +201,13 @@ export class HttpRouter {
    * Helper method for registering HEAD routes.
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-   * @param {IHttpMatcher<any> | >string | RegExp} url
-   * @param {IPipeline<IHttpContext> | IHttpMiddlewareLike[]} middleware
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouter}
    */
   public head(
-    url: IHttpMatcher<any> | string | RegExp,
-    middleware: IPipeline<IHttpContext> | IHttpMiddlewareLike[]
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
   }

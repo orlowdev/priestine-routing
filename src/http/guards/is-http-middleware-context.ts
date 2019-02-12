@@ -1,11 +1,11 @@
-import { isMiddlewareContext } from '../../common/guards';
-import { IHttpContext } from '../interfaces';
+import { HttpContextInterface } from '../interfaces';
+import { isMiddlewareContext } from '@priestine/data/src';
 
 /**
  * Check if argument is middleware context.
  *
  * @param x
- * @returns {x is IHttpContext}
+ * @returns {x is HttpContextInterface}
  */
-export const isHttpMiddlewareContext = (x: any): x is IHttpContext =>
+export const isHttpMiddlewareContext = (x: any): x is HttpContextInterface =>
   isMiddlewareContext(x) && 'request' in x && 'response' in x;

@@ -1,9 +1,9 @@
-import { IMiddleware } from '../../common/interfaces';
-import { IHttpContext } from './http-context.interface';
+import { HttpContextInterface } from './http-context.interface';
+import { MiddlewareInterface } from '@priestine/data/src';
 
 /**
  * Interface each class-based HTTP middleware must implement to be considered as such.
  *
- * @interface IMiddleware<IHttpContext>
+ * @interface MiddlewareInterface<HttpContextInterface>
  */
-export interface IHttpMiddleware extends IMiddleware<IHttpContext> {}
+export interface HttpMiddlewareInterface extends MiddlewareInterface<HttpContextInterface> {}

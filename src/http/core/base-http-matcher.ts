@@ -1,9 +1,8 @@
 import { IncomingMessage } from 'http';
 import { parse } from 'url';
-import { IMatcher } from '../../common/interfaces';
+import { MatcherInterface } from '../../common/interfaces';
 import { HttpMethods } from '../enums';
-import { mergePrefixAndUrl } from '../helpers';
-import { IHttpMatcher } from '../interfaces';
+import { HttpMatcherInterface } from '../interfaces';
 
 /**
  * Base HTTP matcher.
@@ -13,9 +12,9 @@ import { IHttpMatcher } from '../interfaces';
  * provides common logic for deriving matchers that specify the `BaseHttpMatcher.matches` method.
  *
  * @class BaseHttpMatcher<T>
- * @implements IHttpMatcher<T>
+ * @implements HttpMatcherInterface<T>
  */
-export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
+export abstract class BaseHttpMatcher<T> implements HttpMatcherInterface<T> {
   /**
    * URL for matching.
    *
@@ -71,9 +70,9 @@ export abstract class BaseHttpMatcher<T> implements IHttpMatcher<T> {
    * Prepend given prefix to matcher URL.
    *
    * @param prefix
-   * @returns {IMatcher<TUrl, TRequest>}
+   * @returns {MatcherInterface<TUrl, TRequest>}
    */
-  public abstract withPrefix(prefix: string | RegExp): IHttpMatcher<any>;
+  public abstract withPrefix(prefix: string | RegExp): HttpMatcherInterface<any>;
 
   /**
    * Extract IncomingMessage URL pathname.

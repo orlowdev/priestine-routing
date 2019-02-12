@@ -1,9 +1,9 @@
-import { IMiddlewareFunction } from '../../common/interfaces';
-import { IHttpContext } from './http-context.interface';
+import { MiddlewareFunctionInterface } from '@priestine/data/src';
+import { HttpContextInterface } from './http-context.interface';
 
 /**
  * HTTP middleware function interface describes the function requirements to be considered Middleware function.
  *
- * @type IMiddlewareFunction<IHttpContext>
+ * @type MiddlewareFunctionInterface<HttpContextInterface>
  */
-export type IHttpMiddlewareFunction = IMiddlewareFunction<IHttpContext>;
+export type HttpMiddlewareFunction = MiddlewareFunctionInterface<HttpContextInterface>;

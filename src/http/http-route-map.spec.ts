@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { HttpPipeline } from './http-pipeline';
 import { HttpRouteMap } from './http-route-map';
 import { StringHttpMatcher } from './matchers';
+import { Pipeline } from '@priestine/data/src';
 
 describe('HttpRouteMap', () => {
   describe('sort', () => {
@@ -10,7 +10,7 @@ describe('HttpRouteMap', () => {
         .add(/^\/$/, ['GET'], [])
         .add('/a', ['GET'], [])
         .add(/^\/123$/, ['GET'], [])
-        .add(StringHttpMatcher.of({ url: '/456', method: 'GET' }), ['GET'], HttpPipeline.empty());
+        .add(StringHttpMatcher.of({ url: '/456', method: 'GET' }), ['GET'], Pipeline.empty());
 
       expect((Array.from((map as any)._routes.keys())[0] as any).url).to.be.instanceOf(RegExp);
       map.sort();
@@ -39,7 +39,7 @@ describe('HttpRouteMap', () => {
     it('should return value with empty array if route was not found', () => {
       const map = HttpRouteMap.empty();
       expect(map.find({ url: '/', method: 'GET' } as any).key).to.equal(undefined);
-      expect(map.find({ url: '/', method: 'GET' } as any).value).to.be.instanceOf(HttpPipeline);
+      expect(map.find({ url: '/', method: 'GET' } as any).value).to.be.instanceOf(Pipeline);
     });
 
     it('should return key describing matched route and value with assigned pipeline if route was found', () => {
@@ -62,10 +62,10 @@ describe('HttpRouteMap', () => {
       expect(
         HttpRouteMap.empty()
           .concat(
-            HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), HttpPipeline.of([() => {}])]]))
+            HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), Pipeline.from([() => {}])]]))
           )
           .find({ url: '/', method: 'GET' } as any).value
-      ).to.be.instanceOf(HttpPipeline);
+      ).to.be.instanceOf(Pipeline);
     });
 
     it('should override current route key with argument route key if they overlap', () => {
@@ -73,13 +73,11 @@ describe('HttpRouteMap', () => {
       expect(
         (HttpRouteMap.of(
           new Map([
-            [StringHttpMatcher.of({ url: '/', method: 'GET' }), HttpPipeline.of([() => {}])],
-            [StringHttpMatcher.of({ url: '/1', method: 'GET' }), HttpPipeline.of([() => {}])],
+            [StringHttpMatcher.of({ url: '/', method: 'GET' }), Pipeline.from([() => {}])],
+            [StringHttpMatcher.of({ url: '/1', method: 'GET' }), Pipeline.from([() => {}])],
           ])
         )
-          .concat(
-            HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), HttpPipeline.of([f1])]]))
-          )
+          .concat(HttpRouteMap.of(new Map([[StringHttpMatcher.of({ url: '/', method: 'GET' }), Pipeline.from([f1])]])))
           .find({ url: '/', method: 'GET' } as any).value as any)._middleware[0]
       ).to.equal(f1);
     });
