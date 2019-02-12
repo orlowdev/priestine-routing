@@ -1,14 +1,14 @@
-import { IDefaultIntermediate } from '../../common/interfaces';
-import { IHttpRouteData } from './http-route-data.interface';
+import { DefaultIntermediateInterface } from '../../common/interfaces';
+import { HttpRouteDataInterface } from './http-route-data.interface';
 
 /**
  * Default HTTP context intermediate.
  *
- * @interface IDefaultIntermediate
+ * @interface DefaultIntermediateInterface
  */
-export interface IDefaultHttpIntermediate extends IDefaultIntermediate {
+export interface DefaultHttpIntermediateInterface extends DefaultIntermediateInterface {
   /**
    * Currently matched route data.
    */
-  route: IHttpRouteData;
+  route: HttpRouteDataInterface;
 }

@@ -1,16 +1,16 @@
-import { isPipeline, Pipeline } from '@priestine/data/src';
+import { isPipeline, Pipeline, PipelineInterface } from '@priestine/data/src';
 import { IncomingMessage } from 'http';
 import { isRegExpMatcher } from '../common/guards';
-import { IPair } from '../common/interfaces';
+import { PairInterface } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { isHttpMatcher } from './guards';
 import { mergePrefixAndUrl } from './helpers';
-import { HttpPipelineInterface, IHttpMatcher, IHttpMiddlewareLike, IHttpRouteData } from './interfaces';
+import { HttpMatcherInterface, HttpMiddlewareLike, HttpRouteDataInterface } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
 /**
  * HTTP stores the map of registered routeMap internally represented as a
- * Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>.
+ * Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>.
  *
  * @class HttpRouteMap
  */
@@ -27,36 +27,36 @@ export class HttpRouteMap {
   /**
    * Create HttpRouteMap from given Map.
    *
-   * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
+   * @param {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>} routes
    * @returns {HttpRouteMap}
    */
-  public static of(routes: Map<IHttpMatcher<string | RegExp>, HttpPipelineInterface>) {
+  public static of(routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface>) {
     return new HttpRouteMap(routes);
   }
 
   /**
    * Internally stored route map.
    *
-   * @type {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>}
+   * @type {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>}
    * @private
    */
-  protected _routes: Map<IHttpMatcher<string | RegExp>, HttpPipelineInterface>;
+  protected _routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface>;
 
   /**
    * Array of Middleware to be unshifted into each pipeline.
    *
-   * @type {IHttpMiddlewareLike[]}
+   * @type {HttpMiddlewareLike[]}
    * @private
    */
-  protected _beforeEach: HttpPipelineInterface = Pipeline.empty();
+  protected _beforeEach: PipelineInterface = Pipeline.empty();
 
   /**
    * Array of Middleware to be pushed into each pipeline.
    *
-   * @type {IHttpMiddlewareLike[]}
+   * @type {HttpMiddlewareLike[]}
    * @private
    */
-  protected _afterEach: HttpPipelineInterface = Pipeline.empty();
+  protected _afterEach: PipelineInterface = Pipeline.empty();
 
   /**
    * Internally stored prefix to be prepended to each created route.
@@ -82,11 +82,11 @@ export class HttpRouteMap {
 
   /**
    * @constructor
-   * @param {Map<IHttpMatcher<string | RegExp>, IHttpMiddlewareLike[]>} routes
+   * @param {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>} routes
    * @param {string | RegExp} prefix
    */
   public constructor(
-    routes: Map<IHttpMatcher<string | RegExp>, HttpPipelineInterface> = new Map(),
+    routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface> = new Map(),
     prefix: string | RegExp = ''
   ) {
     this._routes = routes;
@@ -96,10 +96,10 @@ export class HttpRouteMap {
   /**
    * Register middleware to be run before each Pipeline.
    *
-   * @param {HttpPipelineInterface | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
-  public beforeEach(middleware: HttpPipelineInterface | IHttpMiddlewareLike[]): HttpRouteMap {
+  public beforeEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouteMap {
     this._beforeEach = this._beforeEach.concat(isPipeline(middleware) ? middleware : Pipeline.from(middleware));
 
     return this;
@@ -108,22 +108,22 @@ export class HttpRouteMap {
   /**
    * Register middleware to be run after each Pipeline.
    *
-   * @param {HttpPipelineInterface | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {HttpRouteMap}
    */
-  public afterEach(middleware: HttpPipelineInterface | IHttpMiddlewareLike[]): HttpRouteMap {
+  public afterEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouteMap {
     this._afterEach = this._afterEach.concat(isPipeline(middleware) ? middleware : Pipeline.from(middleware));
 
     return this;
   }
 
   /**
-   * Find matching route for current IncomingMessage and return an IPair<IHttpRouteData, HttpPipelineInterface>.
+   * Find matching route for current IncomingMessage and return an PairInterface<HttpRouteDataInterface, PipelineInterface>.
    *
    * @param {IncomingMessage} message
-   * @returns {IPair<IHttpRouteData, HttpPipelineInterface>}
+   * @returns {PairInterface<HttpRouteDataInterface, PipelineInterface>}
    */
-  public find(message: IncomingMessage): IPair<IHttpRouteData, HttpPipelineInterface> {
+  public find(message: IncomingMessage): PairInterface<HttpRouteDataInterface, PipelineInterface> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
 
     const value = route ? this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach) : Pipeline.empty();
@@ -138,13 +138,13 @@ export class HttpRouteMap {
    *
    * @param {string | RegExp} url
    * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {HttpPipelineInterface | IHttpMiddlewareLike[]} middleware
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
    * @returns {this}
    */
   public add(
-    url: string | RegExp | IHttpMatcher<any>,
+    url: string | RegExp | HttpMatcherInterface<any>,
     methods: Array<keyof typeof HttpMethods>,
-    middleware: HttpPipelineInterface | IHttpMiddlewareLike[]
+    middleware: PipelineInterface | HttpMiddlewareLike[]
   ) {
     methods.forEach((method) => {
       const key = (isHttpMatcher(url)
@@ -157,7 +157,7 @@ export class HttpRouteMap {
             })
       ).withPrefix(this._prefix);
 
-      this._routes.set(key as IHttpMatcher, isPipeline(middleware) ? middleware : Pipeline.from(middleware));
+      this._routes.set(key as HttpMatcherInterface, isPipeline(middleware) ? middleware : Pipeline.from(middleware));
     });
 
     return this;
@@ -166,10 +166,10 @@ export class HttpRouteMap {
   /**
    * Check if internal map has given key.
    *
-   * @param {IHttpMatcher<string | RegExp>} key
+   * @param {HttpMatcherInterface<string | RegExp>} key
    * @returns {boolean}
    */
-  public has(key: IHttpMatcher<string | RegExp>): boolean {
+  public has(key: HttpMatcherInterface<string | RegExp>): boolean {
     return !!Array.from(this._routes.keys()).find((x) => x.url === key.url && x.method === key.method);
   }
 

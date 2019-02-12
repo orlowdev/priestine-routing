@@ -1,5 +1,4 @@
 export * from './default-http-intermediate.interface';
-export * from './generic-http-context.interface';
 export * from './http-context.interface';
 export * from './http-matcher.interface';
 export * from './http-middleware.interface';

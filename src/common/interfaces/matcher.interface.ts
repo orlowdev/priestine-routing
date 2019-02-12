@@ -1,7 +1,7 @@
 /**
  * Describes route stored in the route map that can be mapped to current request.
  */
-export interface IMatcher<TUrl, TRequest> {
+export interface MatcherInterface<TUrl, TRequest> {
   /**
    * URL that current request must match to be considered mappable.
    */
@@ -19,7 +19,7 @@ export interface IMatcher<TUrl, TRequest> {
    * Prepend given prefix to matcher URL.
    *
    * @param prefix
-   * @returns {IMatcher<TUrl, TRequest>}
+   * @returns {MatcherInterface<TUrl, TRequest>}
    */
-  withPrefix(prefix: string | RegExp): IMatcher<TUrl, TRequest>;
+  withPrefix(prefix: string | RegExp): MatcherInterface<TUrl, TRequest>;
 }

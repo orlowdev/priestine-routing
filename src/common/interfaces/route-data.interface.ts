@@ -1,9 +1,9 @@
 /**
  * Route data descriptor for matched route.
  *
- * @interface IRouteData
+ * @interface RouteDataInterface
  */
-export interface IRouteData {
+export interface RouteDataInterface {
   /**
    * URL that current request matched.
    */

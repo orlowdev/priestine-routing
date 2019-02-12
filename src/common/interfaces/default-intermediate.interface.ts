@@ -1,15 +1,15 @@
-import { IRouteData } from './route-data.interface';
+import { RouteDataInterface } from './route-data.interface';
 
 /**
  * Default context intermediate.
  *
- * @interface IDefaultIntermediate
+ * @interface DefaultIntermediateInterface
  */
-export interface IDefaultIntermediate {
+export interface DefaultIntermediateInterface {
   /**
    * Currently matched route data.
    */
-  route: IRouteData;
+  route: RouteDataInterface;
 
   /**
    * Any internally caught error.

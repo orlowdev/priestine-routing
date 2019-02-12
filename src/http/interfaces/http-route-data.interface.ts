@@ -1,12 +1,12 @@
-import { IRouteData } from '../../common/interfaces';
+import { RouteDataInterface } from '../../common/interfaces';
 import { HttpMethods } from '../enums';
 
 /**
  * Route data descriptor for matched route.
  *
- * @interface IRouteData
+ * @interface RouteDataInterface
  */
-export interface IHttpRouteData extends IRouteData {
+export interface HttpRouteDataInterface extends RouteDataInterface {
   /**
    * HTTP method that current request matched.
    */

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { RegExpHttpMatcher } from './regexp-http-matcher';
 import { StringHttpMatcher } from './string-http-matcher';
 
 describe('StringHttpMatcher', () => {
@@ -19,6 +20,10 @@ describe('StringHttpMatcher', () => {
       expect(
         StringHttpMatcher.of({ url: '/', method: 'GET' }).matches({ url: '/?a=b', method: 'GET' } as any)
       ).to.equal(true);
+    });
+
+    it('should return RegExpHttpMatcher if prefix or url is a RegExp', () => {
+      expect(StringHttpMatcher.of({ url: '/', method: 'GET' }).withPrefix(/\/api/)).to.be.instanceOf(RegExpHttpMatcher);
     });
   });
 });
