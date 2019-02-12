@@ -382,8 +382,7 @@ and status message of the error in the response head as well as the error messag
 ```json
 {
   "success": false,
-  "message": "ERROR_MESSAGE",
-  "stack": "ERROR_STACK_TRACE" /* Stack trace is only visible when NODE_ENV !== 'production' */
+  "message": "ERROR_MESSAGE"
 }
 ```
 
@@ -395,4 +394,4 @@ that doesn't correlate to the app concept.
 ### Error handling
 
 To force quitting current pipeline, you can either **throw** (synchronous middleware) or **reject(e)** (asynchronous
-middleware).
+middleware). The `error` object will be bound to `ctx` alongside `request`, `response` and `intermediate`.

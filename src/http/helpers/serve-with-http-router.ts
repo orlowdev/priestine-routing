@@ -1,5 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { HttpError } from '../errors';
 import { HttpRouter } from '../http-router';
 import { HttpContextInterface } from '../interfaces';
 
@@ -12,7 +11,7 @@ import { HttpContextInterface } from '../interfaces';
  * @param {HttpRouter} router
  * @returns {(request: IncomingMessage, response: ServerResponse) => Promise<void>}
  */
-export const withHttpRouter = (router: HttpRouter) => (
+export const withHttpRouter = (router: HttpRouter) => async (
   request: IncomingMessage,
   response: ServerResponse
 ): Promise<void> => {
@@ -31,11 +30,28 @@ export const withHttpRouter = (router: HttpRouter) => (
   };
 
   if (route.value.isEmpty) {
-    ctx.intermediate.error = HttpError.from(
-      new Error(`Cannot ${ctx.request.method} ${ctx.request.url}`)
-    ).withStatusCode(404);
+    ctx.response.setHeader('Content-Type', 'application/json');
+    ctx.response.statusCode = 404;
+    ctx.response.end(
+      JSON.stringify({
+        success: false,
+        message: `Cannot ${request.method} ${request.url}`,
+      })
+    );
+
     return;
   }
 
-  route.value.process(ctx);
+  const result: HttpContextInterface = await route.value.process(ctx);
+
+  if (result.error) {
+    ctx.response.setHeader('Content-Type', 'application/json');
+    ctx.response.statusCode = (ctx.error as any).statusCode || 500;
+    ctx.response.end(
+      JSON.stringify({
+        success: false,
+        message: `${ctx.error.message}`,
+      })
+    );
+  }
 };
