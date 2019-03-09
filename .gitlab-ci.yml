@@ -47,7 +47,7 @@ versioning:
   stage: deploy
   image: priestine/semantics:latest
   script:
-    - priestine-semantics --private-token=${GITLAB_TOKEN} --fix-or-feat
+    - priestine-semantics --private-token=${GITLAB_TOKEN} --fix-or-feat --prefix=v
   only:
     - master
 
