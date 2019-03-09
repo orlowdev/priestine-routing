@@ -43,26 +43,15 @@ style:
     - tags
     - master
 
-coverage:report:
-  image: node:10
-  stage: test
-  script:
-    - yarn coverage:cover
-  after_script:
-    - bash <(curl -s https://codecov.io/bash) -t "${CODECOV_TOKEN}" -f coverage/*.json
-  only:
-    - master
-  allow_failure: true
-
 versioning:
   stage: deploy
   image: priestine/semantics:latest
   script:
-    - priestine-semantics --private-token=${SEMANTICS_TOKEN} --fix-or-feat
+    - priestine-semantics --private-token=${GITLAB_TOKEN} --fix-or-feat --prefix=v
   only:
     - master
 
-deploy:npm:
+deploy:verdaccio:
   stage: deploy
   script:
     - bash deploy_npm.sh
