@@ -13,8 +13,14 @@ describe('HttpError', () => {
   });
 
   describe('withStatusMessage', () => {
-    it('should assign given status code to error object', () => {
+    it('should assign given status message to error object', () => {
       expect(HttpError.from(new Error()).withStatusMessage('Test').statusMessage).to.equal('Test');
+    });
+  });
+
+  describe('withMessage', () => {
+    it('should assign given message to error object', () => {
+      expect(HttpError.from(new Error()).withMessage('Test').message).to.equal('Test');
     });
   });
 });
