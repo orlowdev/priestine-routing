@@ -56,30 +56,6 @@ export class HttpRouter {
   }
 
   /**
-   * Register middleware to be run before each Pipeline.
-   *
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
-   * @returns {HttpRouter}
-   */
-  public beforeEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouter {
-    this._routeMap.beforeEach(middleware);
-
-    return this;
-  }
-
-  /**
-   * Register middleware to be run after each Pipeline.
-   *
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
-   * @returns {HttpRouter}
-   */
-  public afterEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouter {
-    this._routeMap.afterEach(middleware);
-
-    return this;
-  }
-
-  /**
    * Concat two Routers to create a new Router that has RouteMaps of both Routers merged.
    *
    * @param {HttpRouter} o
@@ -210,5 +186,26 @@ export class HttpRouter {
     middleware: PipelineInterface | HttpMiddlewareLike[]
   ): HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
+  }
+
+  /**
+   * Helper method for registering all common method routes (GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS).
+   *
+   * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @returns {HttpRouter}
+   */
+  public all(
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
+  ): HttpRouter {
+    return this.get(url, middleware)
+      .head(url, middleware)
+      .post(url, middleware)
+      .put(url, middleware)
+      .patch(url, middleware)
+      .delete(url, middleware)
+      .options(url, middleware);
   }
 }

@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { HttpRouteMap } from './http-route-map';
 import { HttpRouter } from './http-router';
 import { StringHttpMatcher } from './matchers';
+import { IncomingMessage } from 'http';
 
 describe('HttpRouter', () => {
   describe('HttpRouter.withPrefix', () => {
@@ -108,6 +109,50 @@ describe('HttpRouter', () => {
     });
   });
 
+  describe('all', () => {
+    it('should create a GET route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'GET' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a HEAD route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'HEAD' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a POST route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'POST' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a PUT route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'PUT' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a PATCH route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'PATCH' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a DELETE route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'DELETE' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a OPTIONS route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'OPTIONS' } as IncomingMessage).key).to.not.be.undefined;
+    });
+  });
+
   describe('concat', () => {
     it('should concat return a Router', () => {
       expect(HttpRouter.empty().concat(HttpRouter.empty())).to.be.instanceOf(HttpRouter);
@@ -143,62 +188,6 @@ describe('HttpRouter', () => {
           .concat(HttpRouter.withPrefix('/v2').get('/1', []))
           .routeMap.has(StringHttpMatcher.of({ url: '/api/v2/1', method: 'GET' }))
       ).to.equal(true);
-    });
-  });
-
-  describe('beforeEach', () => {
-    it('should assign beforeEach middleware to the RouteMap', () => {
-      const f1 = () => {};
-      const f2 = () => {};
-
-      expect(
-        (HttpRouter.empty()
-          .get('/', [f1])
-          .beforeEach([f2])
-          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
-      ).to.deep.equal([f2, f1]);
-    });
-  });
-
-  describe('afterEach', () => {
-    it('should assign afterEach middleware to the RouteMap', () => {
-      const f1 = () => {};
-      const f2 = () => {};
-
-      expect(
-        (HttpRouter.empty()
-          .get('/', [f1])
-          .afterEach([f2])
-          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
-      ).to.deep.equal([f1, f2]);
-    });
-
-    it('should correctly add afterEach when concatenating routers', () => {
-      const f1 = () => {};
-      const f2 = () => {};
-      const f3 = () => {};
-
-      expect(
-        (HttpRouter.empty()
-          .get('/', [f1])
-          .afterEach([f2])
-          .concat(HttpRouter.empty().afterEach([f3]))
-          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
-      ).to.deep.equal([f1, f3, f2]);
-    });
-
-    it('should correctly add beforeEach when concatenating routers', () => {
-      const f1 = () => {};
-      const f2 = () => {};
-      const f3 = () => {};
-
-      expect(
-        (HttpRouter.empty()
-          .get('/', [f1])
-          .beforeEach([f2])
-          .concat(HttpRouter.empty().beforeEach([f3]))
-          .routeMap.find({ url: '/', method: 'GET' } as any).value as any)._middleware
-      ).to.deep.equal([f2, f3, f1]);
     });
   });
 });

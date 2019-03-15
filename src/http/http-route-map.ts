@@ -43,22 +43,6 @@ export class HttpRouteMap {
   protected _routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface>;
 
   /**
-   * Array of Middleware to be unshifted into each pipeline.
-   *
-   * @type {HttpMiddlewareLike[]}
-   * @private
-   */
-  protected _beforeEach: PipelineInterface = Pipeline.empty();
-
-  /**
-   * Array of Middleware to be pushed into each pipeline.
-   *
-   * @type {HttpMiddlewareLike[]}
-   * @private
-   */
-  protected _afterEach: PipelineInterface = Pipeline.empty();
-
-  /**
    * Internally stored prefix to be prepended to each created route.
    */
   protected _prefix: string | RegExp;
@@ -94,30 +78,6 @@ export class HttpRouteMap {
   }
 
   /**
-   * Register middleware to be run before each Pipeline.
-   *
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
-   * @returns {HttpRouteMap}
-   */
-  public beforeEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouteMap {
-    this._beforeEach = this._beforeEach.concat(isPipeline(middleware) ? middleware : Pipeline.from(middleware));
-
-    return this;
-  }
-
-  /**
-   * Register middleware to be run after each Pipeline.
-   *
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
-   * @returns {HttpRouteMap}
-   */
-  public afterEach(middleware: PipelineInterface | HttpMiddlewareLike[]): HttpRouteMap {
-    this._afterEach = this._afterEach.concat(isPipeline(middleware) ? middleware : Pipeline.from(middleware));
-
-    return this;
-  }
-
-  /**
    * Find matching route for current IncomingMessage and return an PairInterface<HttpRouteDataInterface, PipelineInterface>.
    *
    * @param {IncomingMessage} message
@@ -126,7 +86,7 @@ export class HttpRouteMap {
   public find(message: IncomingMessage): PairInterface<HttpRouteDataInterface, PipelineInterface> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
 
-    const value = route ? this._beforeEach.concat(this._routes.get(route)).concat(this._afterEach) : Pipeline.empty();
+    const value = route ? this._routes.get(route) : Pipeline.empty();
 
     const key = route ? { url: route.url, method: route.method } : undefined;
 
@@ -192,9 +152,7 @@ export class HttpRouteMap {
       (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
     });
 
-    return new HttpRouteMap(new Map([...this._routes, ...o._routes]) as any, this._prefix)
-      .beforeEach(this._beforeEach.concat(o._beforeEach))
-      .afterEach(o._afterEach.concat(this._afterEach));
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]) as any, this._prefix);
   }
 
   /**

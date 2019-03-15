@@ -35,7 +35,7 @@ export class HttpError extends Error {
    */
   public statusMessage: string;
 
-  public constructor(message: string) {
+  public constructor(message?: string) {
     super(message);
   }
 
@@ -59,6 +59,17 @@ export class HttpError extends Error {
    */
   public withStatusMessage = (statusMessage: string): this => {
     this.statusMessage = statusMessage;
+    return this;
+  };
+
+  /**
+   * Chaining method for assigning given message to the error.
+   *
+   * @param {string} message
+   * @returns {this}
+   */
+  public withMessage = (message: string): this => {
+    this.message = message;
     return this;
   };
 }
