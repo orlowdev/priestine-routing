@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { HttpRouteMap } from './http-route-map';
 import { HttpRouter } from './http-router';
 import { StringHttpMatcher } from './matchers';
+import { IncomingMessage } from 'http';
 
 describe('HttpRouter', () => {
   describe('HttpRouter.withPrefix', () => {
@@ -105,6 +106,50 @@ describe('HttpRouter', () => {
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'HEAD' })
       );
+    });
+  });
+
+  describe('all', () => {
+    it('should create a GET route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'GET' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a HEAD route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'HEAD' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a POST route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'POST' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a PUT route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'PUT' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a PATCH route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'PATCH' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a DELETE route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'DELETE' } as IncomingMessage).key).to.not.be.undefined;
+    });
+
+    it('should create a OPTIONS route with given path and middleware', () => {
+      const rt = HttpRouter.empty();
+      rt.all('/', []);
+      return expect(rt.routeMap.find({ url: '/', method: 'OPTIONS' } as IncomingMessage).key).to.not.be.undefined;
     });
   });
 

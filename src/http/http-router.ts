@@ -187,4 +187,25 @@ export class HttpRouter {
   ): HttpRouter {
     return this.register(url, [HttpMethods.HEAD], middleware);
   }
+
+  /**
+   * Helper method for registering all common method routes (GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS).
+   *
+   * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+   * @param {HttpMatcherInterface | string | RegExp} url
+   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @returns {HttpRouter}
+   */
+  public all(
+    url: HttpMatcherInterface | string | RegExp,
+    middleware: PipelineInterface | HttpMiddlewareLike[]
+  ): HttpRouter {
+    return this.get(url, middleware)
+      .head(url, middleware)
+      .post(url, middleware)
+      .put(url, middleware)
+      .patch(url, middleware)
+      .delete(url, middleware)
+      .options(url, middleware);
+  }
 }
