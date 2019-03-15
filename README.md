@@ -17,11 +17,11 @@ import { createServer } from 'http';
 const router = HttpRouter.empty();
 
 /**
-* Define a set of functions
-*/
+ * Define a set of functions
+ */
 
 // Curried for creating header builders
-// `ctx` has { request: IncomingMessage, response: ServerResponse, intermediate: {/* Your data plus { route (matched route), error? } */} } 
+// `ctx` has { request: IncomingMessage, response: ServerResponse, intermediate: {/* Your data plus { route (matched route), error? } */} }
 const setHeader = (name) => (value) => ({ response }) => {
   response.setHeader(name, value);
 };
@@ -31,32 +31,28 @@ const setContentTypeHeader = setHeader('Content-Type');
 
 // Anything to be passed to the next middleware should be put to ctx.intermediate
 // to keep request and response Node.js-ly pure
-const buildHello = ({ intermediate }) => {
-    intermediate.helloWorld = {
-      id: 'hello-world',
-      message: 'Hello World!',
-    }
-};
+//
+// Middleware context is passed along the middleware by reference so you can globally change it.
+//
+// It is recommended to return intermediate though, as this will enable deterministic function behaviour.
+// If a middleware returns intermediate, ctx.intermediate is overriden by given value.
+// This allows clearing intermediate contents that are no longer needed.
+// It also enables support for short syntax, e.g.:
+const buildHello = ({ intermediate }) => ({
+  helloWorld: {
+    id: 'hello-world',
+    message: 'Hello World!',
+  },
+});
 
-// You don't need to actually return the ctx. It's done for you automatically
-// In case you run async code, you must create and return a Promise that will resolve when necessary
 const sayHello = (ctx) => ctx.response.end(JSON.stringify(ctx.intermediate.helloWorld));
 
 /**
  * Register them in the router
  */
 router
-  .afterEach([
-    buildHello,
-    sayHello,
-  ])
-  .get('/', [
-    setContentTypeHeader('application/json'),
-  ])
-  .get(/^\/(\d+)\/?$/, [
-    setContentTypeHeader('text/html'),   
-  ])
-;
+  .get('/', [setContentTypeHeader('application/json'), buildHello, sayHello])
+  .get(/^\/(\d+)\/?$/, [setContentTypeHeader('text/html'), buildHello, sayHello]);
 
 /**
  * Assign the router to serve Node.js HTTP server.
@@ -80,117 +76,112 @@ or
 yarn add @priestine/routing
 ```
 
-Routing consists of a few components one should grasp to build routing efficiently:
+Routing consists of a few components one should grasp to build routing efficiently. This is the list, from biggest to
+smallest:
+
+- Routers
+- Pipelines
+- Middleware
 
 ### The Router Thing
 
-1. `HttpRouter` is a kind of fluent interface for registering new routes:
+1. `HttpRouter` is a kind of fluent interface for registering new routes and assigning logic to be executed for them:
 
-  - `router.register` accepts three required arguments:
-    - **url** - a string or a RegExp describing the URL pathname IncomingMessage url must match
-    - **methods** - an array of HTTP methods that IncomingMessage method must be in
-    - **middleware** - an array of `HttpMiddlewareLike` or an `Pipeline` that will be processed if current
-    IncomingMessage matches given url and methods (**NOTE** if you want to use `Pipeline`s you need to also
-    `yarn add @priestine/data`)
-    
-    ```javascript
-    const router = HttpRouter.empty();
-    router
-      .register('/', ['POST', 'PUT'], [
+- `router.register` accepts three required arguments:
+
+  - **url** - a string or a RegExp describing the URL pathname IncomingMessage url must match
+  - **methods** - an array of HTTP methods that IncomingMessage method must be in
+  - **middleware** - an array of `HttpMiddlewareLike` or a `PipelineInterface` that will be processed if current
+    IncomingMessage matches given url and methods (**NOTE** if you want to use `PipelineInterface`s you need to also
+    `yarn add @priestine/data` or `npm i --save @priestine/data`)
+
+  ```javascript
+  const router = HttpRouter.empty();
+  router
+    .register(
+      '/',
+      ['POST', 'PUT'],
+      [
         (ctx) => ctx.response.setHeader('Content-Type', 'application/json'),
         (ctx) => ctx.response.end('{ "success": true }'),
-      ])
-      .register('/1', ['GET'], MyCustomPipeline)
-    ;
-    ```
+      ]
+    )
+    .register('/1', ['GET'], MyCustomPipeline);
+  ```
 
-  - `router.get` (or one of **get**, **post**, **put**, **patch**, **delete**, **options**, **head**) registers a
-  route with the same method and accepts only url and an HttpPipeline or array of middleware
-    
-    ```javascript
-    const router = HttpRouter.empty();
-    router.get('/', [
-      ({ response }) => response.setHeader('Content-Type', 'application/json'),
-      ({ response }) => response.end('{ "success": true }'),
-    ]);
-    ```
-    
-  - `router.beforeEach` and `router.afterEach` accept array of middleware or a pipeline that will be executed
-  before/after each registered pipeline.
-  
-    ```javascript
-    const runBeforeEach = [
-      SetContentTypeHeader('application/json'),
-      ExtractQueryParams,
-      ExtractRequestParams,
-    ];
-  
-    const runAfterEach = [
-      FlushHead,
-      CreateJSONResponseBody,
-      EndResponse,
-    ];
-  
-    HttpRouter
-      .empty()
-      .beforeEach(runBeforeEach)
-      .afterEach(runAfterEach)
-      .get('/', [
-        SomeLogic,
-      ])
-    ;
-    ```
-  
-  - `router.concat` allows concatenating multiple routers into one main router to be used app-wide. This is done to
+- `router.get` (or one of **get**, **post**, **put**, **patch**, **delete**, **options**, **head**, **all**) is a helper
+  method that registers a route with the same method and accepts only url and a `PipelineInterface` or array of middleware
+
+  ```javascript
+  const router = HttpRouter.empty();
+  router.get('/', [
+    ({ response }) => response.setHeader('Content-Type', 'application/json'),
+    ({ response }) => response.end('{ "success": true }'),
+  ]);
+  ```
+
+- `router.concat` allows concatenating multiple routers into one main router to be used app-wide. This is done to
   allow building modular routing with separated logic and then merging them to have single route map.
-  
-    ```javascript
-    const MainRouter = HttpRouter.empty();
-    const ApiRouter = HttpRouter.empty();
-    
-    MainRouter
-      .get('/', [
-        SetContentTypeHeader('text/html'),
-        GetTemplate('./templates/index.html'),
-        EndResponse,
-      ])
-    ;
-    
-    ApiRouter
-      .post('/api/v1/user-actions/subscribe', [
-        SetContentTypeHeader('application/json'),
-        ParseRequestBody,
-        JSONParseLens(['intermediate', 'requestBody']),
-        UpsertUserSubscriptionStatus,
-        EndJSONResponse,
-      ])
-    ;
-    
-    MainRouter.concat(ApiRouter);
-    ```
 
-### HttpMiddleware
- 
-HttpMiddleware is a reusable piece of business logic that encapsulates one specific step.
+  ```javascript
+  // NOTE: middleware provided in this example are not part of @priestine/routing
+  const MainRouter = HttpRouter.empty();
+  const ApiRouter = HttpRouter.empty();
+
+  MainRouter.get('/', [SetContentTypeHeader('text/html'), GetTemplate('./templates/index.html'), EndResponse]);
+
+  ApiRouter.post('/api/v1/user-actions/subscribe', [
+    SetContentTypeHeader('application/json'),
+    ParseRequestBody,
+    JSONParseLens(['intermediate', 'requestBody']),
+    UpsertUserSubscriptionStatus,
+    EndJSONResponse,
+  ]);
+
+  MainRouter.concat(ApiRouter);
+  ```
+
+### The Pipeline Thing
+
+Pipelines are a set of middleware that is executed on matching the route. Pipelines themselves are class-based
+middleware with helper logic enabled. Internally, they iterate over processing assigned middleware until they get
+to the end.
+
+#### Special treatment
+
+- If middleware returns a **Promise**, pipeline will resolve it before moving on to the next one
+- If middleware returns something, or returned **Promise** successfully resolves into something, this something is
+  assigned to `ctx.intermediate`
+- Pipeline passes `ctx` to each middleware by reference so any changes to `ctx.intermediate` from previous middleware
+  is available in further middleware unless `ctx.intermediate` wasn't changed by returning a value from one of previous
+  pieces of middleware
+- If an exception is thrown during pipeline execution or a **Promise** is rejected, the Pipeline immediately stops
+  and delegated the error to the wrapper function
+
+### Middleware
+
+Middleware is a reusable piece of business logic that encapsulates one specific step.
 Middleware in `@priestine/routing` can be function- or class-based. Each middleware is provided with `ctx` argument:
- 
+
 ```javascript
 ctx = {
   request: IncomingMessage,
   response: ServerResponse,
   intermediate: { route: { url: string | RegExp, method: string } } & TIntermediate,
   error: Error | undefined,
-}
+};
 ```
 
-If middleware is deterministic (meaning that it returns the context object or Promise resolving into the context
-object), the context object will be overriden by given value if it successfully validates through `isMiddlewareContext`
+If middleware is deterministic (meaning that it returns the intermediate or Promise resolving into the intermediate),
+the `ctx.intermediate` object will be overriden by given value if `ctx` successfully validates through `isMiddlewareContext`
 guard. This is done for two reasons:
 
-1. Custom transformations for the context that entirely change it
+1. Custom transformations for the intermediate that entirely change it
 2. Easier testing
+3. Cleaning up intermediate from values that are not going to be used anymore
+4. Short syntax for returning objects `=> ({})`
 
-Having said that, it is entirely optional and you can omit returning the context, thus the argument context will
+Having said that, it is entirely optional and you can omit returning the intermediate, thus the argument context will
 be passed to the next piece of middleware automatically.
 
 For passing any computed data to next middleware, you should assign it to `ctx.intermediate` that serves a purpose of
@@ -201,46 +192,67 @@ transferring data along the pipeline.
 **Function middleware** is a fancy name for a function that accepts `ctx`.
 
 ```javascript
-// Synchronous function middleware
-const MyMiddleware = (ctx) => {
-  ctx.intermediate.id = 1;
-}
-
 // Asynchronous function middleware
-const MyAsyncMiddleware = (ctx) => {
-  return new Promise((resolve) => setTimeout(() => { resolve(ctx); }, 200));
-}
+// Due to the fact that it returns a promise, the Pipeline will resolve it before moving on to the next one
+// In the example, the middleware sets intermediate to be { id: 1, aThingToUseSpreadOperatorFor: true } after the
+// the timeout.
+const MyAsyncMiddleware = () =>
+  new Promise((resolve) =>
+    setTimeout(() => {
+      resolve({ id: 1, aThingToUseSpreadOperatorFor: true });
+    }, 200)
+  );
 
-router.get('/', [
-  MyAsyncMiddleware,
-  MyMiddleware,
-]);
+// You can return a Promise with .then assigned as the Pipeline is fully Promise-compliant and the .then callback will
+// be automatically applied. As .then returns a Promise, the behaviour in the pipeline is going to be just the same as
+// if we returned a Promise itself as in the previous function.
+const MyAsyncWithThen = ({ intermediate }) =>
+  asynchrony
+    .then((v) => ({
+      ...intermediate,
+      ...v,
+    }))
+    .catch((e) =>
+      HttpError.from(e)
+        .withStatusCode(500)
+        .withMessage('No-no-no')
+    );
+
+// Synchronous function middleware
+// Previous middleware assigned intermediate to be { id: 1, aThingToUseSpreadOperatorFor: true } and we can access it
+// as the Pipeline resolved the promise. We can use spread operator for the intermediate and use short syntax to return
+// a new intermediate with incremented id and additional 'hello' key.
+const MyMiddleware = ({ intermediate }) => ({
+  ...intermediate,
+  id: intermediate.id + 1,
+  hello: 'world',
+});
+
+router.get('/', [MyAsyncMiddleware, MyAsyncWithThen, MyMiddleware]);
 ```
 
 #### Class-based Middleware
 
-**Class-based middleware** must implement `HttpMiddlewareInterface` interface (it must have a `process`) method that accepts `ctx`.
+**Class-based middleware** must implement `HttpMiddlewareInterface` interface (it must have a `process` method that accepts `ctx`).
 
-**NOTE**: When registering middleware in the Router, you must provide an **instance** of a class-based middleware.
+**NOTE**: When registering middleware in the Pipeline, you must provide an **instance** of a class-based middleware.
 
 ```javascript
 class SetContentTypeHeader {
   static applicationJson() {
     return new SetContentTypeHeader('application/json');
   }
-  
+
   constructor(value) {
     this.value = value;
   }
-  
+
   process(ctx) {
     ctx.response.setHeader('Content-Type', this.value);
   }
 }
 
-router.get('/', [
-  SetContentTypeHeader.applicationJson(),
-])
+router.get('/', [SetContentTypeHeader.applicationJson()]);
 ```
 
 #### Parallel vs waterfall (Lazy vs Eager)
@@ -248,15 +260,15 @@ router.get('/', [
 Asynchronous middleware in the pipeline can be executed either in parallel or sequentially. Each middleware can
 dictate which type of execution must be applied to it:
 
-- **parallel** execution does not block the pipeline and allows next middleware start processing even if the promise of 
-current middleware has not been resolved. In this case, the Promise containing the result of current middleware
-computation can be directly assigned to the `ctx.intermediate` key and *awaited* later where necessary. This approach
-allows doing extra checks simultaneously and exit the pipeline if something is not right. This can be referred to as
-Lazy execution. Example:
+- **parallel** execution does not block the pipeline and allows next middleware start processing even if the promise of
+  current middleware has not been resolved. In this case, the Promise containing the result of current middleware
+  computation can be directly assigned to the `ctx.intermediate` key and _awaited_ later where necessary. This approach
+  allows doing extra checks simultaneously and exit the pipeline if something is not right. This can be referred to as
+  Lazy execution. Example (the functions used in the example are not part of `@priestine/routing`):
 
 ```javascript
 /**
- *  `GetCurrentPost` doesn't block the next piece of middleware that can trigger exiting the pipeline
+ * `GetCurrentPost` doesn't block the next piece of middleware that can trigger exiting the pipeline
  * if user is not authenticated thus not allowed to see posts in this imaginary scenario. This allows writing middleware
  * in arbitrary order in some cases.
  */
@@ -268,19 +280,14 @@ const GetPostComments = async (ctx) => {
   ctx.intermediate.body = (await ctx.intermediate.post).comments;
 };
 
-HttpRouter.empty()
-  .get(/^\/posts\/(?<id>(\w+))\/comments/, [
-    GetCurrentPost,
-    IsAuthenticated,
-    GetPostComments,
-  ])
-;
+HttpRouter.empty().get(/^\/posts\/(?<id>(\w+))\/comments/, [GetCurrentPost, IsAuthenticated, GetPostComments]);
 ```
 
 - **waterfall** execution blocks the pipeline until current middleware is done. This is convenient in cases where further
-execution of the pipeline heavily relies on the result of computation. To inform the pipeline that it needs to wait for
-current middleware to resolve, you need to return a Promise inside the middleware. This can be referred to as Eager
-execution. **NOTE** this doesn't block JavaScript event loop. Example:
+  execution of the pipeline heavily relies on the result of computation. To inform the pipeline that it needs to wait for
+  current middleware to resolve, you need to return a Promise inside the middleware. This can be referred to as Eager
+  execution. **NOTE** this doesn't block JavaScript event loop. Example (the functions used in the example are not part
+  of `@priestine/routing`):
 
 ```javascript
 /**
@@ -288,27 +295,22 @@ execution. **NOTE** this doesn't block JavaScript event loop. Example:
  * the pipeline will be exited and no further computation will be executed, being replaced with emitting a
  * `pipelineError` event.
  */
-const IsAuthorized = (ctx) => new Promise((resolve, reject) => {
-  db.collection('users').findOne({ _id: ctx.intermediate.userId })
-    .then((u) => {
-      if (u.roles.includes('admin')) {
-        ctx.intermediate.userAuhorized = true;
-        resolve(); // To make this middleware deterministic, use resolve(ctx)
-        return;
-      }
-      
-      reject(new UnauthorizedError());
-    })
-  ;
-});
+const IsAuthorized = (ctx) =>
+  new Promise((resolve, reject) => {
+    db.collection('users')
+      .findOne({ _id: ctx.intermediate.userId })
+      .then((u) => {
+        if (u.roles.includes('admin')) {
+          ctx.intermediate.userAuhorized = true;
+          resolve(); // To make this middleware deterministic, use resolve(ctx)
+          return;
+        }
 
-HttpRouter.empty()
-  .get(/^\/posts\/(?<id>(\w+))\/comments/, [
-    IsAuthorized,
-    GetCurrentPost,
-    GetPostComments,
-  ])
-;
+        reject(new UnauthorizedError());
+      });
+  });
+
+HttpRouter.empty().get(/^\/posts\/(?<id>(\w+))\/comments/, [IsAuthorized, GetCurrentPost, GetPostComments]);
 ```
 
 #### Generic Context
@@ -336,7 +338,7 @@ export const GetUser = ({ intermediate }: HttpContextInterface<UserAware>) => {
 
 ### Assigning router to listen for connections
 
-The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a helper
+The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a wrapper
 `withHttpRouter` and pass it to `http.createServer` as an argument:
 
 #### HTTP
@@ -345,11 +347,7 @@ The router itself cannot listen for **IncomingMessage**'s and to make it work yo
 import { createServer } from 'http';
 import { HttpRouter, withHttpRouter } from '@priestine/routing';
 
-const router = HttpRouter.empty()
-  .get('/', [
-    (ctx) => ctx.response.end('hi'),
-  ])
-;
+const router = HttpRouter.empty().get('/', [(ctx) => ctx.response.end('hi')]);
 
 createServer(withHttpRouter(router)).listen(3000);
 ```
@@ -362,11 +360,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { HttpRouter, withHttpRouter } from '@priestine/routing';
 
-const router = HttpRouter.empty()
-  .get('/', [
-    ({ response }) => response.end('hi'),
-  ])
-;
+const router = HttpRouter.empty().get('/', [({ response }) => response.end('hi')]);
 
 const options = {
   key: readFileSync(resolve('/path/to/certificate/key.pem')),
@@ -387,7 +381,9 @@ and status message of the error in the response head as well as the error messag
 ```
 
 If you wish to amend this behaviour, you can create your own Router wrapper.
+
 See https://gitlab.com/priestine/routing/blob/dev/src/http/helpers/serve-with-http-router.ts for details.
+
 **NOTE**: `withHttpRouter` is marked deprecated and will be removed in future releases due to it opinionated behaviour
 that doesn't correlate to the app concept.
 
