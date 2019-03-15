@@ -158,6 +158,49 @@ to the end.
 - If an exception is thrown during pipeline execution or a **Promise** is rejected, the Pipeline immediately stops
   and delegated the error to the wrapper function
 
+#### Manual Pipeline building
+
+Pipelines are classes implementing `PipelineInterface`. To use them manually, you have to `npm i --save @priestine/data`
+or `yarn add @priestine/data`.
+
+When you declare routes, you can pass arrays of middleware and Router will create pipelines from those arrays
+automatically. You can also provide pipelines yourself:
+
+```javascript
+import { Pipeline } from '@priestine/data/src';
+
+const router = HttpRouter.empty();
+
+const MyPipeline = Pipeline.from([MyMiddleware, MySecondMiddleware, MyThirdMiddleware]);
+
+router.get('/', MyPipeline);
+```
+
+#### Pipeline.concat
+
+You can build multiple reusable pipelines and concat them together before assigning to the router:
+
+```javascript
+const AccessControlPipeline = Pipeline.from([
+  /* Some middleware */
+]);
+const ContentNegotiationPipeline = Pipeline.from([
+  /* Some middleware */
+]);
+
+router = HttpRouter.empty();
+
+router.get(
+  '/',
+  Pipeline.empty()
+    .concat(AccessControlPipeline)
+    .concat(ContentNegotiationPipeline)
+    .concat(Pipeline.of(({ response }) => response.end('OK')))
+);
+```
+
+This allows you to compose middleware into reusable sets that can be appended/prepended anywhere in your app.
+
 ### Middleware
 
 Middleware is a reusable piece of business logic that encapsulates one specific step.
@@ -186,49 +229,6 @@ be passed to the next piece of middleware automatically.
 
 For passing any computed data to next middleware, you should assign it to `ctx.intermediate` that serves a purpose of
 transferring data along the pipeline.
-
-##### Manual Pipeline building
-
-Pipelines are classes implementing `PipelineInterface`. To use them manually, you have to `npm i --save @priestine/data`
-or `yarn add @priestine/data`.
-
-When you declare routes, you can pass arrays of middleware and Router will create pipelines from those arrays
-automatically. You can also provide pipelines yourself:
-
-```javascript
-import { Pipeline } from '@priestine/data/src';
-
-const router = HttpRouter.empty();
-
-const MyPipeline = Pipeline.from([MyMiddleware, MySecondMiddleware, MyThirdMiddleware]);
-
-router.get('/', MyPipeline);
-```
-
-##### Pipeline.concat
-
-You can build multiple reusable pipelines and concat them together before assigning to the router:
-
-```javascript
-const AccessControlPipeline = Pipeline.from([
-  /* Some middleware */
-]);
-const ContentNegotiationPipeline = Pipeline.from([
-  /* Some middleware */
-]);
-
-router = HttpRouter.empty();
-
-router.get(
-  '/',
-  Pipeline.empty()
-    .concat(AccessControlPipeline)
-    .concat(ContentNegotiationPipeline)
-    .concat(Pipeline.of(({ response }) => response.end('OK')))
-);
-```
-
-This allows you to compose middleware into reusable pieces that can be appended/prepended anywhere in your app.
 
 #### Function Middleware
 
