@@ -9,6 +9,8 @@ describe('HttpRouteMap', () => {
       const map = HttpRouteMap.empty()
         .add(/^\/$/, ['GET'], [])
         .add('/a', ['GET'], [])
+        .add('', ['GET'], [])
+        .add(/.*/, ['GET'], [])
         .add(/^\/123$/, ['GET'], [])
         .add(StringHttpMatcher.of({ url: '/456', method: 'GET' }), ['GET'], Pipeline.empty());
 
