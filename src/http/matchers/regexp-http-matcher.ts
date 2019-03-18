@@ -3,7 +3,6 @@ import { BaseHttpMatcher } from '../core';
 import { HttpMethods } from '../enums';
 import { mergePrefixAndUrl } from '../helpers';
 import { HttpMatcherInterface } from '../interfaces';
-import { StringHttpMatcher } from './string-http-matcher';
 
 /**
  * RegExp-based route. These are evaluated second.
@@ -39,5 +38,13 @@ export class RegExpHttpMatcher extends BaseHttpMatcher<RegExp> {
     const url = mergePrefixAndUrl(prefix, this.url as any) as RegExp;
     const method = this._method;
     return RegExpHttpMatcher.of({ url, method });
+  }
+
+  /**
+   * Get complexity of the route calculated from the amount of /.
+   */
+  public get complexity(): number {
+    const match = this.url.source.match(/\//g);
+    return 1000000000 - (match ? match.length : 1);
   }
 }

@@ -40,9 +40,17 @@ export class StringHttpMatcher extends BaseHttpMatcher<string> {
    * @param prefix
    * @returns {MatcherInterface<TUrl, TRequest>}
    */
-  withPrefix(prefix: string | RegExp): HttpMatcherInterface<any> {
+  public withPrefix(prefix: string | RegExp): HttpMatcherInterface<any> {
     const url = mergePrefixAndUrl(prefix, this.url as any);
     const method = this._method;
     return typeof url === 'string' ? StringHttpMatcher.of({ url, method }) : RegExpHttpMatcher.of({ url, method });
+  }
+
+  /**
+   * Get complexity of the route calculated from the amount of /.
+   */
+  public get complexity(): number {
+    const match = this.url.match(/\//g);
+    return match ? match.length : 1;
   }
 }

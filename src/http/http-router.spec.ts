@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { HttpRouteMap } from './http-route-map';
 import { HttpRouter } from './http-router';
 import { StringHttpMatcher } from './matchers';
-import { IncomingMessage } from 'http';
 
 describe('HttpRouter', () => {
   describe('HttpRouter.withPrefix', () => {
@@ -109,50 +108,6 @@ describe('HttpRouter', () => {
     });
   });
 
-  describe('all', () => {
-    it('should create a GET route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'GET' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a HEAD route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'HEAD' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a POST route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'POST' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a PUT route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'PUT' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a PATCH route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'PATCH' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a DELETE route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'DELETE' } as IncomingMessage).key).to.not.be.undefined;
-    });
-
-    it('should create a OPTIONS route with given path and middleware', () => {
-      const rt = HttpRouter.empty();
-      rt.all('/', []);
-      return expect(rt.routeMap.find({ url: '/', method: 'OPTIONS' } as IncomingMessage).key).to.not.be.undefined;
-    });
-  });
-
   describe('concat', () => {
     it('should concat return a Router', () => {
       expect(HttpRouter.empty().concat(HttpRouter.empty())).to.be.instanceOf(HttpRouter);
@@ -184,7 +139,7 @@ describe('HttpRouter', () => {
     it('should preserve prefixes only on current concatenation scope', () => {
       expect(
         HttpRouter.withPrefix('/api')
-          .concat(HttpRouter.withPrefix('/v1').get('/1', []))
+          .concat(HttpRouter.withPrefix('/v1').all('/1', []))
           .concat(HttpRouter.withPrefix('/v2').get('/1', []))
           .routeMap.has(StringHttpMatcher.of({ url: '/api/v2/1', method: 'GET' }))
       ).to.equal(true);

@@ -75,6 +75,13 @@ export abstract class BaseHttpMatcher<T> implements HttpMatcherInterface<T> {
   public abstract withPrefix(prefix: string | RegExp): HttpMatcherInterface<any>;
 
   /**
+   * Complexity of the route.
+   * For string matchers, the more /, the higher the complexity (initial complexity is 1).
+   * For RegExp matchers, the more /, the lower the complexity (initial complexity is 1000000).
+   */
+  public abstract complexity: number;
+
+  /**
    * Extract IncomingMessage URL pathname.
    *
    * @param {string} url

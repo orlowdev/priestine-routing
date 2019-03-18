@@ -1,6 +1,5 @@
 import { isPipeline, Pipeline, PipelineInterface } from '@priestine/data/src';
 import { IncomingMessage } from 'http';
-import { isRegExpMatcher } from '../common/guards';
 import { PairInterface } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { isHttpMatcher } from './guards';
@@ -163,7 +162,7 @@ export class HttpRouteMap {
       return;
     }
 
-    this._routes = new Map(Array.from(this._routes.entries()).sort((x) => (isRegExpMatcher(x[0]) ? 1 : -1)));
+    this._routes = new Map(Array.from(this._routes.entries()).sort((a, b) => a[0].complexity - b[0].complexity));
 
     this._sorted = true;
   }
