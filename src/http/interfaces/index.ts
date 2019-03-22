@@ -4,5 +4,4 @@ export * from './http-matcher.interface';
 export * from './http-middleware.interface';
 export * from './http-middleware-function.interface';
 export * from './http-middleware-like.interface';
-export * from './http-pipeline.interface';
 export * from './http-route-data.interface';
