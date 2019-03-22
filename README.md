@@ -5,11 +5,15 @@
 `@priestine/routing` brings simple and eloquent routing to Node.js. It currently only works with Node.js `http` and `https`
 yet new releases aim to support other APIs.
 
+**NOTE**: It doesn't provide integration with Node.js HTTP(S) server itself - you need to install `@priestine/grace` to
+do that.
+
 ## TL;DR
 
 ```javascript
-import { withHttpRouter, HttpRouter } from '@priestine/routing';
-import { createServer } from 'http';
+const { HttpRouter } = require('@priestine/routing');
+const { withRouter } = require('@priestine/grace');
+const { createServer } = require('http');
 
 /**
  * Create an empty router
@@ -57,7 +61,7 @@ router
 /**
  * Assign the router to serve Node.js HTTP server.
  */
-createServer(withHttpRouter(router)).listen(3000);
+createServer(withRouter(router)).listen(3000);
 
 // Go get http://localhost:3000 or http://localhost:3000/123123123
 ```
@@ -166,8 +170,10 @@ or `yarn add @priestine/data`.
 When you declare routes, you can pass arrays of middleware and Router will create pipelines from those arrays
 automatically. You can also provide pipelines yourself:
 
-```javascript
-import { Pipeline } from '@priestine/data/src';
+```typescript
+import { Pipeline } from '@priestine/data';
+import { HttpRouter } from '@priestine/routing';
+import { MyMiddleware, MySecondMiddleware, MyThirdMiddleware } from './middleware';
 
 const router = HttpRouter.empty();
 
@@ -207,11 +213,11 @@ Middleware is a reusable piece of business logic that encapsulates one specific 
 Middleware in `@priestine/routing` can be function- or class-based. Each middleware is provided with `ctx` argument:
 
 ```javascript
-ctx = {
+ctx<TIntermediate> = {
   request: IncomingMessage,
   response: ServerResponse,
   intermediate: { route: { url: string | RegExp, method: string } } & TIntermediate,
-  error: Error | undefined,
+  error?: Error,
 };
 ```
 
@@ -382,26 +388,28 @@ export const GetUser = ({ intermediate }: HttpContextInterface<UserAware>) => {
 ### Assigning router to listen for connections
 
 The router itself cannot listen for **IncomingMessage**'s and to make it work you need to wrap it into a wrapper
-`withHttpRouter` and pass it to `http.createServer` as an argument:
+`withRouter` from `@priestine/grace` and pass it to `http.createServer` as an argument:
 
 #### HTTP
 
-```javascript
+```typescript
 import { createServer } from 'http';
-import { HttpRouter, withHttpRouter } from '@priestine/routing';
+import { HttpRouter } from '@priestine/routing';
+import { withRouter } from '@priestine/grace';
 
 const router = HttpRouter.empty().get('/', [(ctx) => ctx.response.end('hi')]);
 
-createServer(withHttpRouter(router)).listen(3000);
+createServer(withRouter(router)).listen(3000);
 ```
 
 #### HTTPS
 
-```javascript
+```typescript
 import { createServer } from 'https';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { HttpRouter, withHttpRouter } from '@priestine/routing';
+import { HttpRouter } from '@priestine/routing';
+import { withRouter } from '@priestine/grace';
 
 const router = HttpRouter.empty().get('/', [({ response }) => response.end('hi')]);
 
@@ -410,25 +418,8 @@ const options = {
   cert: readFileSync(resolve('/path/to/certificate/cert.pem')),
 };
 
-createServer(options, withHttpRouter(router)).listen(3000);
+createServer(options, withRouter(router)).listen(3000);
 ```
-
-**NOTE**: `withHttpRouter` is opinionated and in case error occurs it always returns JSON response with the status code
-and status message of the error in the response head as well as the error message in the response body, wrapped into
-
-```json
-{
-  "success": false,
-  "message": "ERROR_MESSAGE"
-}
-```
-
-If you wish to amend this behaviour, you can create your own Router wrapper.
-
-See https://gitlab.com/priestine/routing/blob/dev/src/http/helpers/serve-with-http-router.ts for details.
-
-**NOTE**: `withHttpRouter` is marked deprecated and will be removed in future releases due to it opinionated behaviour
-that doesn't correlate to the app concept.
 
 ### Error handling
 
