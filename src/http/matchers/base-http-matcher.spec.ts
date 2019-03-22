@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { StringHttpMatcher } from '../matchers';
+import { StringHttpMatcher } from '.';
 
 describe('BaseHttpMatcher', () => {
   describe('url', () => {

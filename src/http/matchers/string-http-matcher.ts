@@ -1,5 +1,5 @@
 import { IncomingMessage } from 'http';
-import { BaseHttpMatcher } from '../core';
+import { BaseHttpMatcher } from '../';
 import { HttpMethods } from '../enums';
 import { mergePrefixAndUrl } from '../helpers';
 import { HttpMatcherInterface } from '../interfaces';
