@@ -10,9 +10,4 @@ export interface DefaultIntermediateInterface {
    * Currently matched route data.
    */
   route: RouteDataInterface;
-
-  /**
-   * Any internally caught error.
-   */
-  error?: Error;
 }
