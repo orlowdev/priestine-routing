@@ -9,14 +9,10 @@ import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 /**
  * HTTP stores the map of registered routeMap internally represented as a
  * Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>.
- *
- * @class HttpRouteMap
  */
 export class HttpRouteMap {
   /**
    * Create an empty HttpRouteMap.
-   *
-   * @returns {HttpRouteMap}
    */
   public static empty() {
     return new HttpRouteMap();
@@ -24,9 +20,6 @@ export class HttpRouteMap {
 
   /**
    * Create HttpRouteMap from given Map.
-   *
-   * @param {Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>} routes
-   * @returns {HttpRouteMap}
    */
   public static of(routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>) {
     return new HttpRouteMap(routes);
@@ -34,9 +27,6 @@ export class HttpRouteMap {
 
   /**
    * Internally stored route map.
-   *
-   * @type {Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>}
-   * @private
    */
   protected _routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>;
 
@@ -47,16 +37,11 @@ export class HttpRouteMap {
 
   /**
    * Map is sorted flag.
-   *
-   * @type {boolean}
-   * @private
    */
   private _sorted: boolean = false;
 
   /**
    * Getter for _sorted.
-   *
-   * @returns {boolean}
    */
   public get sorted(): boolean {
     return this._sorted;
@@ -64,8 +49,6 @@ export class HttpRouteMap {
 
   /**
    * @constructor
-   * @param {Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>} routes
-   * @param {string | RegExp} prefix
    */
   public constructor(
     routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any> = new Map(),
@@ -77,9 +60,6 @@ export class HttpRouteMap {
 
   /**
    * Find matching route for current IncomingMessage and return an PairInterface<HttpRouteDataInterface, (request, response) => any>.
-   *
-   * @param {IncomingMessage} message
-   * @returns {PairInterface<HttpRouteDataInterface, (request, response) => any>}
    */
   public find(message: IncomingMessage): PairInterface<HttpRouteDataInterface, (request, response) => any> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
@@ -93,11 +73,6 @@ export class HttpRouteMap {
 
   /**
    * Add a new route definition to a RouteMap.
-   *
-   * @param {string | RegExp} url
-   * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {(request, response) => any} callback
-   * @returns {this}
    */
   public add(
     url: string | RegExp | HttpMatcherInterface<any>,
@@ -123,9 +98,6 @@ export class HttpRouteMap {
 
   /**
    * Check if internal map has given key.
-   *
-   * @param {HttpMatcherInterface<string | RegExp>} key
-   * @returns {boolean}
    */
   public has(key: HttpMatcherInterface<string | RegExp>): boolean {
     return !!Array.from(this._routes.keys()).find((x) => x.url === key.url && x.method === key.method);
@@ -135,9 +107,6 @@ export class HttpRouteMap {
    * Concat current RouteMap with the one provided as parameter.
    * **NOTE**: if two maps have the same key, the key of the argument RouteMap will have priority over the key
    * of current RouteMap.
-   *
-   * @param {HttpRouteMap} o
-   * @returns {HttpRouteMap}
    */
   public concat(o: HttpRouteMap): HttpRouteMap {
     for (const [k] of this._routes) {

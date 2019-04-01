@@ -20,7 +20,7 @@ describe('HttpRouter', () => {
   describe('register', () => {
     it('should register a route with given path, method and middleware', () => {
       const rt = HttpRouter.from(new HttpRouteMap());
-      rt.register('/', ['GET'], () => {});
+      rt.register(['GET'], '/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'GET' })
       );
@@ -28,12 +28,20 @@ describe('HttpRouter', () => {
 
     it('should register a route given multiple methods', () => {
       const rt = HttpRouter.empty();
-      rt.register('/', ['GET', 'POST'], () => {});
+      rt.register(['GET', 'POST'], '/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'GET' })
       );
       expect(Array.from((rt.routeMap as any)._routes.keys())[1]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'POST' })
+      );
+    });
+
+    it('should register empty string as route url if it was not provided as parameter', () => {
+      const rt = HttpRouter.empty();
+      rt.register(['GET'], () => {});
+      expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
+        StringHttpMatcher.of({ url: '', method: 'GET' })
       );
     });
   });
