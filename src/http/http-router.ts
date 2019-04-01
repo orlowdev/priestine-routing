@@ -1,7 +1,6 @@
-import { PipelineInterface } from '@priestine/data';
 import { HttpMethods } from './enums';
 import { HttpRouteMap } from './http-route-map';
-import { HttpMatcherInterface, HttpMiddlewareLike } from './interfaces';
+import { HttpMatcherInterface } from './interfaces';
 
 /**
  * HTTP router provides fluent interface for registering routeMap.
@@ -70,15 +69,15 @@ export class HttpRouter {
    *
    * @param {HttpMatcherInterface | string | RegExp} url
    * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {this}
    */
   public register(
     url: HttpMatcherInterface | string | RegExp,
     methods: Array<keyof typeof HttpMethods>,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
+    callback: (request, response) => any
   ) {
-    this._routeMap.add(url, methods, middleware);
+    this._routeMap.add(url, methods, callback);
 
     return this;
   }
@@ -88,14 +87,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouteMap}
    */
-  public get(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.GET], middleware);
+  public get(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.GET], callback);
   }
 
   /**
@@ -103,14 +99,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public post(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.POST], middleware);
+  public post(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.POST], callback);
   }
 
   /**
@@ -118,14 +111,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public put(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.PUT], middleware);
+  public put(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.PUT], callback);
   }
 
   /**
@@ -133,14 +123,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public patch(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.PATCH], middleware);
+  public patch(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.PATCH], callback);
   }
 
   /**
@@ -148,14 +135,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public delete(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.DELETE], middleware);
+  public delete(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.DELETE], callback);
   }
 
   /**
@@ -163,14 +147,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public options(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.OPTIONS], middleware);
+  public options(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.OPTIONS], callback);
   }
 
   /**
@@ -178,14 +159,11 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public head(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.register(url, [HttpMethods.HEAD], middleware);
+  public head(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.register(url, [HttpMethods.HEAD], callback);
   }
 
   /**
@@ -193,19 +171,16 @@ export class HttpRouter {
    *
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
    * @param {HttpMatcherInterface | string | RegExp} url
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
+   * @param callback
    * @returns {HttpRouter}
    */
-  public all(
-    url: HttpMatcherInterface | string | RegExp,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
-  ): HttpRouter {
-    return this.get(url, middleware)
-      .head(url, middleware)
-      .post(url, middleware)
-      .put(url, middleware)
-      .patch(url, middleware)
-      .delete(url, middleware)
-      .options(url, middleware);
+  public all(url: HttpMatcherInterface | string | RegExp, callback: (request, response) => any): HttpRouter {
+    return this.get(url, callback)
+      .head(url, callback)
+      .post(url, callback)
+      .put(url, callback)
+      .patch(url, callback)
+      .delete(url, callback)
+      .options(url, callback);
   }
 }
