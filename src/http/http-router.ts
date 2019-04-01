@@ -52,6 +52,13 @@ export class HttpRouter {
   }
 
   /**
+   * Apply changes to the route map of current router and return a new HttpRouter with modified route map assigned to it.
+   */
+  public map(f: (x: HttpRouteMap) => HttpRouteMap) {
+    return HttpRouter.empty().concat(HttpRouter.from(f(this.routeMap)));
+  }
+
+  /**
    * Register a new route in the Router.routeMap.
    */
   public register(

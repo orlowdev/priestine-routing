@@ -48,6 +48,13 @@ export class HttpRouteMap {
   }
 
   /**
+   * Getter for _routes.
+   */
+  public get routes(): Map<HttpMatcherInterface<string | RegExp>, (request, response) => any> {
+    return this._routes;
+  }
+
+  /**
    * @constructor
    */
   public constructor(
