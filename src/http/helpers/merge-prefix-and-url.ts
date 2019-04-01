@@ -15,10 +15,10 @@ export const mergePrefixAndUrl = (prefix: string | RegExp, url: string | RegExp)
   if (prefixIsString) {
     return urlIsString
       ? (prefix as string).concat(url as string).replace(/(\/\/)/g, '/')
-      : new RegExp(new RegExp(prefix).source.concat((url as RegExp).source.replace(/(\/\/)/g, '/')));
+      : new RegExp(new RegExp(prefix).source.concat((url as RegExp).source).replace(/(\\\/\\\/)/g, '/'));
   }
 
   return urlIsString
-    ? new RegExp((prefix as RegExp).source.concat(new RegExp(url).source.replace(/(\/\/)/g, '/')))
-    : new RegExp((prefix as RegExp).source.concat((url as RegExp).source.replace(/(\/\/)/g, '/')));
+    ? new RegExp((prefix as RegExp).source.concat(new RegExp(url).source).replace(/(\\\/\\\/)/g, '/'))
+    : new RegExp((prefix as RegExp).source.concat((url as RegExp).source).replace(/(\\\/\\\/)/g, '/'));
 };
