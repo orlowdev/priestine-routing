@@ -66,7 +66,6 @@ export class HttpRouter {
   public register(...args) {
     const methods = args[0];
     const url = args[2] ? args[1] : '';
-    console.log(url, args);
     const callback = args[2] ? args[2] : args[1];
     this._routeMap.add(url, methods, callback);
 
