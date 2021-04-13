@@ -6,7 +6,7 @@ import { StringHttpMatcher } from './matchers';
 describe('HttpRouter', () => {
   describe('HttpRouter.withPrefix', () => {
     it('should apply prefix to registered routes', () => {
-      const rt = HttpRouter.withPrefix('/api').get('/v1', []);
+      const rt = HttpRouter.withPrefix('/api').get('/v1', () => {});
       expect(rt.routeMap.has(StringHttpMatcher.of({ url: '/api/v1', method: 'GET' }))).to.equal(true);
     });
   });
@@ -20,7 +20,7 @@ describe('HttpRouter', () => {
   describe('register', () => {
     it('should register a route with given path, method and middleware', () => {
       const rt = HttpRouter.from(new HttpRouteMap());
-      rt.register('/', ['GET'], []);
+      rt.register(['GET'], '/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'GET' })
       );
@@ -28,7 +28,7 @@ describe('HttpRouter', () => {
 
     it('should register a route given multiple methods', () => {
       const rt = HttpRouter.empty();
-      rt.register('/', ['GET', 'POST'], []);
+      rt.register(['GET', 'POST'], '/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'GET' })
       );
@@ -36,12 +36,20 @@ describe('HttpRouter', () => {
         StringHttpMatcher.of({ url: '/', method: 'POST' })
       );
     });
+
+    it('should register empty string as route url if it was not provided as parameter', () => {
+      const rt = HttpRouter.empty();
+      rt.register(['GET'], () => {});
+      expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
+        StringHttpMatcher.of({ url: '', method: 'GET' })
+      );
+    });
   });
 
   describe('get', () => {
     it('should create a GET route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.get('/', []);
+      rt.get('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'GET' })
       );
@@ -51,7 +59,7 @@ describe('HttpRouter', () => {
   describe('post', () => {
     it('should create a POST route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.post('/', []);
+      rt.post('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'POST' })
       );
@@ -61,7 +69,7 @@ describe('HttpRouter', () => {
   describe('put', () => {
     it('should create a PUT route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.put('/', []);
+      rt.put('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'PUT' })
       );
@@ -71,7 +79,7 @@ describe('HttpRouter', () => {
   describe('patch', () => {
     it('should create a PATCH route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.patch('/', []);
+      rt.patch('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'PATCH' })
       );
@@ -81,7 +89,7 @@ describe('HttpRouter', () => {
   describe('delete', () => {
     it('should create a DELETE route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.delete('/', []);
+      rt.delete('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'DELETE' })
       );
@@ -91,7 +99,7 @@ describe('HttpRouter', () => {
   describe('options', () => {
     it('should create a OPTIONS route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.options('/', []);
+      rt.options('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'OPTIONS' })
       );
@@ -101,7 +109,7 @@ describe('HttpRouter', () => {
   describe('head', () => {
     it('should create a HEAD route with given path and middleware', () => {
       const rt = HttpRouter.empty();
-      rt.head('/', []);
+      rt.head('/', () => {});
       expect(Array.from((rt.routeMap as any)._routes.keys())[0]).to.deep.equal(
         StringHttpMatcher.of({ url: '/', method: 'HEAD' })
       );
@@ -116,14 +124,14 @@ describe('HttpRouter', () => {
     it('should merge route maps of both routers', () => {
       expect(
         HttpRouter.empty()
-          .get('/', [])
-          .concat(HttpRouter.empty().get('/1', []))
+          .get('/', () => {})
+          .concat(HttpRouter.empty().get('/1', () => {}))
           .routeMap.has(StringHttpMatcher.of({ url: '/', method: 'GET' }))
       ).to.equal(true);
       expect(
         HttpRouter.empty()
-          .get('/', [])
-          .concat(HttpRouter.empty().get('/1', []))
+          .get('/', () => {})
+          .concat(HttpRouter.empty().get('/1', () => {}))
           .routeMap.has(StringHttpMatcher.of({ url: '/1', method: 'GET' }))
       ).to.equal(true);
     });
@@ -131,7 +139,7 @@ describe('HttpRouter', () => {
     it('should preserve prefixes', () => {
       expect(
         HttpRouter.withPrefix('/api')
-          .concat(HttpRouter.withPrefix('/v1').get('/1', []))
+          .concat(HttpRouter.withPrefix('/v1').get('/1', () => {}))
           .routeMap.has(StringHttpMatcher.of({ url: '/api/v1/1', method: 'GET' }))
       ).to.equal(true);
     });
@@ -139,8 +147,8 @@ describe('HttpRouter', () => {
     it('should preserve prefixes only on current concatenation scope', () => {
       expect(
         HttpRouter.withPrefix('/api')
-          .concat(HttpRouter.withPrefix('/v1').all('/1', []))
-          .concat(HttpRouter.withPrefix('/v2').get('/1', []))
+          .concat(HttpRouter.withPrefix('/v1').all('/1', () => {}))
+          .concat(HttpRouter.withPrefix('/v2').get('/1', () => {}))
           .routeMap.has(StringHttpMatcher.of({ url: '/api/v2/1', method: 'GET' }))
       ).to.equal(true);
     });

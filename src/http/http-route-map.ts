@@ -1,23 +1,18 @@
-import { isPipeline, Pipeline, PipelineInterface } from '@priestine/data/src';
 import { IncomingMessage } from 'http';
 import { PairInterface } from '../common/interfaces';
 import { HttpMethods } from './enums';
 import { isHttpMatcher } from './guards';
 import { mergePrefixAndUrl } from './helpers';
-import { HttpMatcherInterface, HttpMiddlewareLike, HttpRouteDataInterface } from './interfaces';
+import { HttpMatcherInterface, HttpRouteDataInterface } from './interfaces';
 import { RegExpHttpMatcher, StringHttpMatcher } from './matchers';
 
 /**
  * HTTP stores the map of registered routeMap internally represented as a
- * Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>.
- *
- * @class HttpRouteMap
+ * Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>.
  */
 export class HttpRouteMap {
   /**
    * Create an empty HttpRouteMap.
-   *
-   * @returns {HttpRouteMap}
    */
   public static empty() {
     return new HttpRouteMap();
@@ -25,21 +20,15 @@ export class HttpRouteMap {
 
   /**
    * Create HttpRouteMap from given Map.
-   *
-   * @param {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>} routes
-   * @returns {HttpRouteMap}
    */
-  public static of(routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface>) {
+  public static of(routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>) {
     return new HttpRouteMap(routes);
   }
 
   /**
    * Internally stored route map.
-   *
-   * @type {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>}
-   * @private
    */
-  protected _routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface>;
+  protected _routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any>;
 
   /**
    * Internally stored prefix to be prepended to each created route.
@@ -48,28 +37,28 @@ export class HttpRouteMap {
 
   /**
    * Map is sorted flag.
-   *
-   * @type {boolean}
-   * @private
    */
   private _sorted: boolean = false;
 
   /**
    * Getter for _sorted.
-   *
-   * @returns {boolean}
    */
   public get sorted(): boolean {
     return this._sorted;
   }
 
   /**
+   * Getter for _routes.
+   */
+  public get routes(): Map<HttpMatcherInterface<string | RegExp>, (request, response) => any> {
+    return this._routes;
+  }
+
+  /**
    * @constructor
-   * @param {Map<HttpMatcherInterface<string | RegExp>, HttpMiddlewareLike[]>} routes
-   * @param {string | RegExp} prefix
    */
   public constructor(
-    routes: Map<HttpMatcherInterface<string | RegExp>, PipelineInterface> = new Map(),
+    routes: Map<HttpMatcherInterface<string | RegExp>, (request, response) => any> = new Map(),
     prefix: string | RegExp = ''
   ) {
     this._routes = routes;
@@ -77,15 +66,12 @@ export class HttpRouteMap {
   }
 
   /**
-   * Find matching route for current IncomingMessage and return an PairInterface<HttpRouteDataInterface, PipelineInterface>.
-   *
-   * @param {IncomingMessage} message
-   * @returns {PairInterface<HttpRouteDataInterface, PipelineInterface>}
+   * Find matching route for current IncomingMessage and return an PairInterface<HttpRouteDataInterface, (request, response) => any>.
    */
-  public find(message: IncomingMessage): PairInterface<HttpRouteDataInterface, PipelineInterface> {
+  public find(message: IncomingMessage): PairInterface<HttpRouteDataInterface, (request, response) => any> {
     const route = Array.from(this._routes.keys()).find((x) => x.matches(message));
 
-    const value = route ? this._routes.get(route) : Pipeline.empty();
+    const value = route ? this._routes.get(route) : undefined;
 
     const key = route ? { url: route.url, method: route.method } : undefined;
 
@@ -94,16 +80,11 @@ export class HttpRouteMap {
 
   /**
    * Add a new route definition to a RouteMap.
-   *
-   * @param {string | RegExp} url
-   * @param {Array<keyof typeof HttpMethods>} methods
-   * @param {PipelineInterface | HttpMiddlewareLike[]} middleware
-   * @returns {this}
    */
   public add(
     url: string | RegExp | HttpMatcherInterface<any>,
     methods: Array<keyof typeof HttpMethods>,
-    middleware: PipelineInterface | HttpMiddlewareLike[]
+    callback: (request, response) => any
   ) {
     methods.forEach((method) => {
       const key = (isHttpMatcher(url)
@@ -116,7 +97,7 @@ export class HttpRouteMap {
             })
       ).withPrefix(this._prefix);
 
-      this._routes.set(key as HttpMatcherInterface, isPipeline(middleware) ? middleware : Pipeline.from(middleware));
+      this._routes.set(key as HttpMatcherInterface, callback);
     });
 
     return this;
@@ -124,21 +105,15 @@ export class HttpRouteMap {
 
   /**
    * Check if internal map has given key.
-   *
-   * @param {HttpMatcherInterface<string | RegExp>} key
-   * @returns {boolean}
    */
   public has(key: HttpMatcherInterface<string | RegExp>): boolean {
     return !!Array.from(this._routes.keys()).find((x) => x.url === key.url && x.method === key.method);
   }
 
   /**
-   * Concat current RouteMap with the one provided as argument.
+   * Concat current RouteMap with the one provided as parameter.
    * **NOTE**: if two maps have the same key, the key of the argument RouteMap will have priority over the key
    * of current RouteMap.
-   *
-   * @param {HttpRouteMap} o
-   * @returns {HttpRouteMap}
    */
   public concat(o: HttpRouteMap): HttpRouteMap {
     for (const [k] of this._routes) {
@@ -151,11 +126,11 @@ export class HttpRouteMap {
       (key as any)._url = mergePrefixAndUrl(this._prefix, key.url);
     });
 
-    return new HttpRouteMap(new Map([...this._routes, ...o._routes]) as any, this._prefix);
+    return new HttpRouteMap(new Map([...this._routes, ...o._routes]), this._prefix);
   }
 
   /**
-   * Sort internally stored Map to have routeMap matched by string before routeMap matched by RegExp.
+   * Sort internally stored Map to have routes matched by string before routes matched by RegExp.
    */
   public sort(): void {
     if (this._sorted) {
